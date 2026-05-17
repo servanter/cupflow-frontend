@@ -128,10 +128,16 @@
         "selectedIconPath": "static/tab/guess-active.png"
       },
       {
-        "pagePath": "pages/news/index",
-        "text": "资讯",
+        "pagePath": "pages/highlights/index",
+        "text": "精彩",
         "iconPath": "static/tab/highlight.png",
         "selectedIconPath": "static/tab/highlight-active.png"
+      },
+      {
+        "pagePath": "pages/news/index",
+        "text": "资讯",
+        "iconPath": "static/tab/news.png",
+        "selectedIconPath": "static/tab/news-active.png"
       },
       {
         "pagePath": "pages/user/index",
