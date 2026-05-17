@@ -6,55 +6,43 @@
       <text class="banner-subtitle">美国·加拿大·墨西哥</text>
     </view>
 
-    <!-- 实时对阵看板 -->
+    <!-- 最近赛程（卡片横滑样式） -->
     <view class="section">
       <view class="section-header">
-        <text class="section-title">实时对阵</text>
+        <text class="section-title">{{ scheduleTitle }}</text>
         <text class="section-more" @tap="goToMatches">全部赛程 ></text>
       </view>
-      <scroll-view scroll-x class="match-scroll">
-        <view class="match-card" v-for="match in liveMatches" :key="match.id" @tap="goToLive(match.id)">
-          <view class="match-status" :class="statusClass(match.status)">{{ match.status }}</view>
+      <scroll-view scroll-x class="match-scroll" v-if="upcomingMatches.length > 0">
+        <view class="match-card" v-for="match in upcomingMatches" :key="match.id" @tap="goToLive(match.id)">
+          <view class="card-top">
+            <view class="match-status" :class="statusClass(match.status)">{{ match.status }}</view>
+            <text class="match-date">{{ formatMatchDate(matchDate) }} {{ match.match_time }}</text>
+          </view>
           <view class="match-teams">
             <view class="team">
               <image :src="match.home_flag" class="team-flag" mode="aspectFit" />
               <text class="team-name">{{ match.home_team_name }}</text>
             </view>
             <view class="score">
-              <text class="score-text">{{ match.home_score }} - {{ match.away_score }}</text>
-              <text class="match-time">{{ match.match_time }}</text>
+              <text class="score-text" v-if="match.status !== '未开始'">{{ match.home_score }} - {{ match.away_score }}</text>
+              <text class="score-vs" v-else>VS</text>
             </view>
             <view class="team">
               <image :src="match.away_flag" class="team-flag" mode="aspectFit" />
               <text class="team-name">{{ match.away_team_name }}</text>
             </view>
           </view>
+          <view class="card-bottom">
+            <text class="match-stage">{{ match.stage }}</text>
+          </view>
         </view>
       </scroll-view>
-    </view>
-
-    <!-- 今日赛程 -->
-    <view class="section">
-      <view class="section-header">
-        <text class="section-title">今日赛程</text>
-      </view>
-      <view class="today-list">
-        <view class="today-item" v-for="match in todayMatches" :key="match.id" @tap="goToLive(match.id)">
-          <text class="today-time">{{ match.match_time }}</text>
-          <view class="today-teams">
-            <text>{{ match.home_team_name }}</text>
-            <text class="today-vs">{{ match.status === '已结束' ? `${match.home_score} - ${match.away_score}` : 'VS' }}</text>
-            <text>{{ match.away_team_name }}</text>
-          </view>
-          <text class="today-stage">{{ match.stage }}</text>
-        </view>
-        <view v-if="todayMatches.length === 0" class="empty-tip">
-          <text>今日暂无赛事</text>
-        </view>
+      <view v-else class="empty-tip">
+        <text>暂无赛事安排</text>
       </view>
     </view>
 
-    <!-- 积分榜入口 + 射手榜 -->
+    <!-- 射手榜 -->
     <view class="section">
       <view class="section-header">
         <text class="section-title">射手榜</text>
@@ -95,38 +83,34 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import api from "@/api";
 import { useUserStore } from "@/store/user";
 
 const userStore = useUserStore();
-const liveMatches = ref<any[]>([]);
-const todayMatches = ref<any[]>([]);
+const upcomingMatches = ref<any[]>([]);
+const matchDate = ref("");
+const isToday = ref(true);
 const topScorers = ref<any[]>([]);
+
+const scheduleTitle = computed(() => {
+  if (isToday.value) return "今日赛程";
+  if (!matchDate.value) return "赛程";
+  return `最近赛程 · ${formatMatchDate(matchDate.value)}`;
+});
 
 onMounted(() => {
   userStore.init();
-  fetchMatches();
-  fetchTodayMatches();
+  fetchUpcomingMatches();
   fetchTopScorers();
 });
 
-const fetchMatches = async () => {
-  const res = await api.get("/api/matches");
-  if (res.code === 200) {
-    // 优先显示进行中，然后未开始，然后已结束
-    const all = res.data || [];
-    const live = all.filter((m: any) => m.status === "进行中");
-    const upcoming = all.filter((m: any) => m.status === "未开始").slice(0, 3);
-    const finished = all.filter((m: any) => m.status === "已结束").slice(-2);
-    liveMatches.value = [...live, ...upcoming, ...finished].slice(0, 5);
-  }
-};
-
-const fetchTodayMatches = async () => {
+const fetchUpcomingMatches = async () => {
   const res = await api.get("/api/matches/today");
-  if (res.code === 200) {
-    todayMatches.value = res.data || [];
+  if (res.code === 200 && res.data) {
+    upcomingMatches.value = res.data.matches || [];
+    matchDate.value = res.data.matchDate || "";
+    isToday.value = res.data.isToday ?? true;
   }
 };
 
@@ -135,6 +119,12 @@ const fetchTopScorers = async () => {
   if (res.code === 200) {
     topScorers.value = res.data || [];
   }
+};
+
+const formatMatchDate = (dateStr: string) => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  return `${d.getMonth() + 1}月${d.getDate()}日`;
 };
 
 const statusClass = (status: string) => {
@@ -218,12 +208,17 @@ const navigateTo = (url: string) => {
   margin-right: 20rpx;
   vertical-align: top;
 }
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
 .match-status {
   font-size: 22rpx;
   padding: 4rpx 12rpx;
   border-radius: 6rpx;
   display: inline-block;
-  margin-bottom: 12rpx;
 }
 .status-live {
   background: #e8f5e9;
@@ -236,6 +231,10 @@ const navigateTo = (url: string) => {
 .status-upcoming {
   background: #f5f5f5;
   color: #666;
+}
+.match-date {
+  font-size: 22rpx;
+  color: #999;
 }
 .match-teams {
   display: flex;
@@ -267,43 +266,18 @@ const navigateTo = (url: string) => {
   color: #333;
   display: block;
 }
-.match-time {
+.score-vs {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #bdbdbd;
+}
+.card-bottom {
+  margin-top: 12rpx;
+  text-align: center;
+}
+.match-stage {
   font-size: 22rpx;
   color: #999;
-}
-.today-list {
-  /* nothing */
-}
-.today-item {
-  display: flex;
-  align-items: center;
-  padding: 16rpx 0;
-  border-bottom: 1rpx solid #f0f0f0;
-}
-.today-time {
-  font-size: 26rpx;
-  color: #1a73e8;
-  width: 100rpx;
-  font-weight: bold;
-}
-.today-teams {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28rpx;
-  color: #333;
-}
-.today-vs {
-  margin: 0 16rpx;
-  color: #999;
-  font-weight: bold;
-}
-.today-stage {
-  font-size: 22rpx;
-  color: #999;
-  width: 120rpx;
-  text-align: right;
 }
 .empty-tip {
   text-align: center;
