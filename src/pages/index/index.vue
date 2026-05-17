@@ -77,6 +77,10 @@
 
     <!-- 快捷入口 -->
     <view class="quick-entry">
+      <view class="entry-item" @tap="navigateTo('/pages/highlights/index')">
+        <text class="entry-icon">🎬</text>
+        <text class="entry-text">精彩回放</text>
+      </view>
       <view class="entry-item" @tap="navigateTo('/pages/rank/index')">
         <text class="entry-icon">🏆</text>
         <text class="entry-text">排行榜</text>
