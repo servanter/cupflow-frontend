@@ -164,7 +164,7 @@ const goToPlayer = (playerId: number) => {
 };
 
 const navigateTo = (url: string) => {
-  if (url.includes("guess") || url.includes("highlights")) {
+  if (url.includes("guess") || url.includes("news")) {
     uni.switchTab({ url });
   } else {
     uni.navigateTo({ url });

@@ -95,6 +95,18 @@
       "style": {
         "navigationBarTitleText": "全部赛程"
       }
+    },
+    {
+      "path": "pages/news/index",
+      "style": {
+        "navigationBarTitleText": "足球资讯"
+      }
+    },
+    {
+      "path": "pages/news-detail/index",
+      "style": {
+        "navigationBarTitleText": "资讯详情"
+      }
     }
   ],
   "tabBar": {
@@ -116,8 +128,8 @@
         "selectedIconPath": "static/tab/guess-active.png"
       },
       {
-        "pagePath": "pages/highlights/index",
-        "text": "精彩",
+        "pagePath": "pages/news/index",
+        "text": "资讯",
         "iconPath": "static/tab/highlight.png",
         "selectedIconPath": "static/tab/highlight-active.png"
       },
