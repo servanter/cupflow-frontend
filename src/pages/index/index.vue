@@ -42,6 +42,21 @@
       </view>
     </view>
 
+    <!-- 参赛球队 -->
+    <view class="section">
+      <view class="section-header">
+        <text class="section-title">参赛球队</text>
+        <text class="section-more" @tap="goToAllTeams">全部球队 ></text>
+      </view>
+      <scroll-view scroll-x class="team-scroll" v-if="hotTeams.length > 0">
+        <view class="team-card" v-for="t in hotTeams" :key="t.id" @tap="goToTeamDetail(t.id)">
+          <image :src="t.flag_url" class="tc-flag" mode="aspectFit" />
+          <text class="tc-name">{{ t.name }}</text>
+          <text class="tc-continent">{{ t.continent }}</text>
+        </view>
+      </scroll-view>
+    </view>
+
     <!-- 射手榜 -->
     <view class="section">
       <view class="section-header">
@@ -62,10 +77,6 @@
 
     <!-- 快捷入口 -->
     <view class="quick-entry">
-      <view class="entry-item" @tap="navigateTo('/pages/teams/index')">
-        <text class="entry-icon">🏟️</text>
-        <text class="entry-text">参赛球队</text>
-      </view>
       <view class="entry-item" @tap="navigateTo('/pages/rank/index')">
         <text class="entry-icon">🏆</text>
         <text class="entry-text">排行榜</text>
@@ -89,11 +100,13 @@ import { useUserStore } from "@/store/user";
 
 const userStore = useUserStore();
 const upcomingMatches = ref<any[]>([]);
+const hotTeams = ref<any[]>([]);
 const topScorers = ref<any[]>([]);
 
 onMounted(() => {
   userStore.init();
   fetchUpcomingMatches();
+  fetchHotTeams();
   fetchTopScorers();
 });
 
@@ -101,6 +114,13 @@ const fetchUpcomingMatches = async () => {
   const res = await api.get("/api/matches/today");
   if (res.code === 200 && res.data) {
     upcomingMatches.value = res.data.matches || [];
+  }
+};
+
+const fetchHotTeams = async () => {
+  const res = await api.get("/api/teams");
+  if (res.code === 200) {
+    hotTeams.value = (res.data || []).slice(0, 6);
   }
 };
 
@@ -129,6 +149,14 @@ const goToLive = (matchId: number) => {
 
 const goToMatches = () => {
   uni.navigateTo({ url: "/pages/teams/index" });
+};
+
+const goToAllTeams = () => {
+  uni.navigateTo({ url: "/pages/teams/index" });
+};
+
+const goToTeamDetail = (id: number) => {
+  uni.navigateTo({ url: `/pages/team-detail/index?id=${id}` });
 };
 
 const goToPlayer = (playerId: number) => {
@@ -267,6 +295,39 @@ const navigateTo = (url: string) => {
 }
 .match-stage {
   font-size: 22rpx;
+  color: #999;
+}
+.team-scroll {
+  white-space: nowrap;
+}
+.team-card {
+  display: inline-block;
+  width: 180rpx;
+  background: #f8f9fa;
+  border-radius: 12rpx;
+  padding: 24rpx 16rpx;
+  margin-right: 16rpx;
+  vertical-align: top;
+  text-align: center;
+}
+.tc-flag {
+  width: 80rpx;
+  height: 54rpx;
+  margin-bottom: 12rpx;
+}
+.tc-name {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 6rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tc-continent {
+  display: block;
+  font-size: 20rpx;
   color: #999;
 }
 .empty-tip {
