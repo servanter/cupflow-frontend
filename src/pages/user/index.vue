@@ -39,8 +39,8 @@
       <view class="section">
         <view class="section-header">
           <text class="section-title">我的关注</text>
-          <text class="section-action" v-if="profile.follows?.length > 0" @tap="navigateTo('/pages/my-follows/index')">
-            全部{{ profile.follows.length }}支 >
+          <text class="section-action" v-if="profile.follows?.length > 0" @tap="navigateTo('/pages/teams/index')">
+            去关注 >
           </text>
           <text class="section-action" v-else @tap="navigateTo('/pages/teams/index')">去关注 ></text>
         </view>
@@ -65,8 +65,8 @@
       <view class="section">
         <view class="section-header">
           <text class="section-title">竞猜记录</text>
-          <text class="section-action" v-if="profile.guesses?.length > 0" @tap="navigateTo('/pages/my-guesses/index')">
-            全部{{ profile.guesses.length }}场 >
+          <text class="section-action" v-if="profile.guesses?.length > 0" @tap="navigateTo('/pages/guess/index')">
+            去竞猜 >
           </text>
         </view>
         <view class="guess-list" v-if="profile.guesses?.length > 0">
