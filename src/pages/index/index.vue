@@ -9,14 +9,14 @@
     <!-- 最近赛程（卡片横滑样式） -->
     <view class="section">
       <view class="section-header">
-        <text class="section-title">{{ scheduleTitle }}</text>
+        <text class="section-title">最近赛程</text>
         <text class="section-more" @tap="goToMatches">全部赛程 ></text>
       </view>
       <scroll-view scroll-x class="match-scroll" v-if="upcomingMatches.length > 0">
         <view class="match-card" v-for="match in upcomingMatches" :key="match.id" @tap="goToLive(match.id)">
           <view class="card-top">
             <view class="match-status" :class="statusClass(match.status)">{{ match.status }}</view>
-            <text class="match-date">{{ formatMatchDate(matchDate) }} {{ match.match_time }}</text>
+            <text class="match-date">{{ formatMatchDate(match.match_date) }} {{ match.match_time }}</text>
           </view>
           <view class="match-teams">
             <view class="team">
@@ -83,21 +83,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import api from "@/api";
 import { useUserStore } from "@/store/user";
 
 const userStore = useUserStore();
 const upcomingMatches = ref<any[]>([]);
-const matchDate = ref("");
-const isToday = ref(true);
 const topScorers = ref<any[]>([]);
-
-const scheduleTitle = computed(() => {
-  if (isToday.value) return "今日赛程";
-  if (!matchDate.value) return "赛程";
-  return `最近赛程 · ${formatMatchDate(matchDate.value)}`;
-});
 
 onMounted(() => {
   userStore.init();
@@ -109,8 +101,6 @@ const fetchUpcomingMatches = async () => {
   const res = await api.get("/api/matches/today");
   if (res.code === 200 && res.data) {
     upcomingMatches.value = res.data.matches || [];
-    matchDate.value = res.data.matchDate || "";
-    isToday.value = res.data.isToday ?? true;
   }
 };
 
