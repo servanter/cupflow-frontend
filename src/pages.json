@@ -1,0 +1,132 @@
+{
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "CupFlow - 世界杯"
+      }
+    },
+    {
+      "path": "pages/match-live/index",
+      "style": {
+        "navigationBarTitleText": "文字直播"
+      }
+    },
+    {
+      "path": "pages/highlights/index",
+      "style": {
+        "navigationBarTitleText": "精彩回放"
+      }
+    },
+    {
+      "path": "pages/highlight-detail/index",
+      "style": {
+        "navigationBarTitleText": "回放详情"
+      }
+    },
+    {
+      "path": "pages/teams/index",
+      "style": {
+        "navigationBarTitleText": "参赛球队"
+      }
+    },
+    {
+      "path": "pages/team-detail/index",
+      "style": {
+        "navigationBarTitleText": "球队详情"
+      }
+    },
+    {
+      "path": "pages/player-detail/index",
+      "style": {
+        "navigationBarTitleText": "球员详情"
+      }
+    },
+    {
+      "path": "pages/guess/index",
+      "style": {
+        "navigationBarTitleText": "竞猜投票"
+      }
+    },
+    {
+      "path": "pages/rank/index",
+      "style": {
+        "navigationBarTitleText": "积分排行"
+      }
+    },
+    {
+      "path": "pages/user/index",
+      "style": {
+        "navigationBarTitleText": "个人中心"
+      }
+    },
+    {
+      "path": "pages/login/index",
+      "style": {
+        "navigationBarTitleText": "登录注册"
+      }
+    },
+    {
+      "path": "pages/standings/index",
+      "style": {
+        "navigationBarTitleText": "积分榜"
+      }
+    },
+    {
+      "path": "pages/champion/index",
+      "style": {
+        "navigationBarTitleText": "冠军预测"
+      }
+    },
+    {
+      "path": "pages/my-follows/index",
+      "style": {
+        "navigationBarTitleText": "我的关注"
+      }
+    },
+    {
+      "path": "pages/my-guesses/index",
+      "style": {
+        "navigationBarTitleText": "竞猜记录"
+      }
+    }
+  ],
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#1a73e8",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "static/tab/home.png",
+        "selectedIconPath": "static/tab/home-active.png"
+      },
+      {
+        "pagePath": "pages/guess/index",
+        "text": "竞猜",
+        "iconPath": "static/tab/guess.png",
+        "selectedIconPath": "static/tab/guess-active.png"
+      },
+      {
+        "pagePath": "pages/highlights/index",
+        "text": "精彩",
+        "iconPath": "static/tab/highlight.png",
+        "selectedIconPath": "static/tab/highlight-active.png"
+      },
+      {
+        "pagePath": "pages/user/index",
+        "text": "我的",
+        "iconPath": "static/tab/user.png",
+        "selectedIconPath": "static/tab/user-active.png"
+      }
+    ]
+  },
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "CupFlow",
+    "navigationBarBackgroundColor": "#ffffff",
+    "backgroundColor": "#f5f5f5"
+  }
+}
