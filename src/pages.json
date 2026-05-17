@@ -89,6 +89,12 @@
       "style": {
         "navigationBarTitleText": "竞猜记录"
       }
+    },
+    {
+      "path": "pages/schedule/index",
+      "style": {
+        "navigationBarTitleText": "全部赛程"
+      }
     }
   ],
   "tabBar": {

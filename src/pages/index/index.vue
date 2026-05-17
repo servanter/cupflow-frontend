@@ -148,7 +148,7 @@ const goToLive = (matchId: number) => {
 };
 
 const goToMatches = () => {
-  uni.navigateTo({ url: "/pages/teams/index" });
+  uni.navigateTo({ url: "/pages/schedule/index" });
 };
 
 const goToAllTeams = () => {
