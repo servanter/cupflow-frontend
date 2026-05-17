@@ -122,6 +122,12 @@
         "selectedIconPath": "static/tab/home-active.png"
       },
       {
+        "pagePath": "pages/news/index",
+        "text": "资讯",
+        "iconPath": "static/tab/news.png",
+        "selectedIconPath": "static/tab/news-active.png"
+      },
+      {
         "pagePath": "pages/guess/index",
         "text": "竞猜",
         "iconPath": "static/tab/guess.png",
@@ -132,12 +138,6 @@
         "text": "精彩",
         "iconPath": "static/tab/highlight.png",
         "selectedIconPath": "static/tab/highlight-active.png"
-      },
-      {
-        "pagePath": "pages/news/index",
-        "text": "资讯",
-        "iconPath": "static/tab/news.png",
-        "selectedIconPath": "static/tab/news-active.png"
       },
       {
         "pagePath": "pages/user/index",

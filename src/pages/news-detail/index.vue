@@ -1,9 +1,36 @@
 <template>
   <view class="container">
     <view class="detail-card" v-if="detail.id">
-      <!-- 封面图 -->
+      <!-- 视频播放器（有视频时显示在最顶部） -->
+      <view class="video-section" v-if="detail.video_url">
+        <!-- H5: 使用iframe嵌入B站播放器 -->
+        <!-- #ifdef H5 -->
+        <iframe
+          v-if="embedUrl"
+          :src="embedUrl"
+          class="video-player"
+          scrolling="no"
+          frameborder="0"
+          allowfullscreen="true"
+        ></iframe>
+        <!-- #endif -->
+        <!-- 非H5: 显示封面+跳转提示 -->
+        <!-- #ifndef H5 -->
+        <view class="video-fallback" @tap="openVideo">
+          <image v-if="detail.cover_url" :src="detail.cover_url" class="video-poster" mode="aspectFill" />
+          <view class="play-overlay">
+            <view class="play-btn">
+              <text class="play-icon">▶</text>
+            </view>
+            <text class="play-tip">点击播放视频</text>
+          </view>
+        </view>
+        <!-- #endif -->
+      </view>
+
+      <!-- 没视频时显示封面图 -->
       <image
-        v-if="detail.cover_url"
+        v-if="!detail.video_url && detail.cover_url"
         :src="detail.cover_url"
         class="cover-image"
         mode="aspectFill"
@@ -27,23 +54,34 @@
       <view class="content-box" v-if="detail.content">
         <text class="content-text">{{ detail.content }}</text>
       </view>
-
-      <!-- 视频链接 -->
-      <view class="video-link" v-if="detail.video_url" @tap="openVideo">
-        <text class="video-play">▶️</text>
-        <text class="video-label">观看视频</text>
-      </view>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import api from "@/api";
 
 const detail = ref<any>({});
 const newsId = ref(0);
 const tags = ["经典回顾", "球星故事", "历届盘点", "转会动态", "战术解析"];
+
+// 将B站链接转为嵌入播放器地址
+const embedUrl = computed(() => {
+  const url = detail.value.video_url;
+  if (!url) return "";
+  // B站链接: https://www.bilibili.com/video/BVxxxxxx
+  const bvMatch = url.match(/bilibili\.com\/video\/(BV[\w]+)/);
+  if (bvMatch) {
+    return `https://player.bilibili.com/player.html?bvid=${bvMatch[1]}&high_quality=1&autoplay=0`;
+  }
+  // 如果已经是嵌入链接
+  if (url.includes("player.bilibili.com")) {
+    return url;
+  }
+  // 其他视频源直接返回
+  return url;
+});
 
 onMounted(() => {
   const pages = getCurrentPages();
@@ -69,13 +107,10 @@ const formatDate = (date: string) => {
 
 const openVideo = () => {
   if (detail.value.video_url) {
-    // #ifdef H5
-    window.open(detail.value.video_url, "_blank");
-    // #endif
     // #ifndef H5
     uni.setClipboardData({
       data: detail.value.video_url,
-      success: () => uni.showToast({ title: "链接已复制", icon: "success" }),
+      success: () => uni.showToast({ title: "链接已复制，请在浏览器打开", icon: "none" }),
     });
     // #endif
   }
@@ -93,6 +128,58 @@ const openVideo = () => {
   border-radius: 16rpx;
   overflow: hidden;
 }
+
+/* 视频播放器 */
+.video-section {
+  width: 100%;
+  background: #000;
+}
+.video-player {
+  width: 100%;
+  height: 420rpx;
+  display: block;
+}
+.video-fallback {
+  position: relative;
+  width: 100%;
+  height: 420rpx;
+}
+.video-poster {
+  width: 100%;
+  height: 420rpx;
+}
+.play-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+}
+.play-btn {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16rpx;
+}
+.play-icon {
+  font-size: 44rpx;
+  color: #1a73e8;
+  margin-left: 8rpx;
+}
+.play-tip {
+  font-size: 24rpx;
+  color: #fff;
+}
+
 .cover-image {
   width: 100%;
   height: 360rpx;
@@ -145,23 +232,5 @@ const openVideo = () => {
   font-size: 28rpx;
   color: #333;
   line-height: 1.8;
-}
-.video-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 24rpx 24rpx;
-  padding: 24rpx;
-  background: #1a73e8;
-  border-radius: 12rpx;
-}
-.video-play {
-  font-size: 32rpx;
-  margin-right: 12rpx;
-}
-.video-label {
-  font-size: 28rpx;
-  color: #fff;
-  font-weight: bold;
 }
 </style>
