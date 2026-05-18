@@ -75,6 +75,7 @@
       </view>
     </view>
 
+    <!-- #ifndef MP-WEIXIN -->
     <!-- 快捷入口 -->
     <view class="quick-entry">
       <view class="entry-item" @tap="navigateTo('/pages/highlights/index')">
@@ -94,6 +95,7 @@
         <text class="entry-text">冠军预测</text>
       </view>
     </view>
+    <!-- #endif -->
   </view>
 </template>
 

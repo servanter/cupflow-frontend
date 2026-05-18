@@ -42,8 +42,14 @@
           <text class="video-text">有视频</text>
         </view>
       </view>
-      <view v-if="newsList.length === 0" class="empty">
+      <view v-if="newsList.length === 0 && !loading" class="empty">
         <text>暂无资讯</text>
+      </view>
+      <view v-if="loading" class="load-tip">
+        <text>加载中...</text>
+      </view>
+      <view v-if="!hasMore && newsList.length > 0" class="load-tip">
+        <text>没有更多了</text>
       </view>
     </view>
   </view>
@@ -51,24 +57,51 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import { onReachBottom } from "@dcloudio/uni-app";
 import api from "@/api";
 
 const newsList = ref<any[]>([]);
 const currentTag = ref("");
 const tags = ["经典回顾", "球星故事", "历届盘点", "转会动态", "战术解析"];
+const page = ref(1);
+const hasMore = ref(true);
+const loading = ref(false);
 
 onMounted(() => {
   fetchNews();
 });
 
-const fetchNews = async () => {
-  const tagParam = currentTag.value ? `?tag=${currentTag.value}` : "";
-  const res = await api.get(`/api/news${tagParam}`);
-  if (res.code === 200) newsList.value = res.data || [];
+const fetchNews = async (loadMore = false) => {
+  if (loading.value) return;
+  if (loadMore && !hasMore.value) return;
+  loading.value = true;
+
+  const curPage = loadMore ? page.value + 1 : 1;
+  let params = `?page=${curPage}&pageSize=10`;
+  if (currentTag.value) params += `&tag=${currentTag.value}`;
+
+  const res = await api.get(`/api/news${params}`);
+  if (res.code === 200) {
+    const data = res.data;
+    if (loadMore) {
+      newsList.value = [...newsList.value, ...data.list];
+    } else {
+      newsList.value = data.list || [];
+    }
+    page.value = curPage;
+    hasMore.value = data.hasMore;
+  }
+  loading.value = false;
 };
+
+onReachBottom(() => {
+  fetchNews(true);
+});
 
 const filterTag = (tag: string) => {
   currentTag.value = tag;
+  page.value = 1;
+  hasMore.value = true;
   fetchNews();
 };
 
@@ -202,5 +235,11 @@ const formatDate = (date: string) => {
   padding: 100rpx;
   color: #999;
   font-size: 28rpx;
+}
+.load-tip {
+  text-align: center;
+  padding: 30rpx;
+  color: #bbb;
+  font-size: 24rpx;
 }
 </style>
