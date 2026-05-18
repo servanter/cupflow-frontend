@@ -14,6 +14,7 @@
       </view>
       <view class="not-login-body">
         <view class="feature-list">
+          <!-- #ifndef MP-WEIXIN -->
           <view class="feature-item">
             <text class="feature-icon">🎯</text>
             <view class="feature-info">
@@ -21,6 +22,7 @@
               <text class="feature-desc">参与比赛预测，赢取积分排名</text>
             </view>
           </view>
+          <!-- #endif -->
           <view class="feature-item">
             <text class="feature-icon">⚽</text>
             <view class="feature-info">
@@ -49,27 +51,33 @@
         <view class="avatar">{{ userStore.nickname.charAt(0) }}</view>
         <view class="user-info">
           <text class="nickname">{{ userStore.nickname }}</text>
+          <!-- #ifndef MP-WEIXIN -->
           <text class="user-meta">积分: {{ profile.points || 0 }} | 排名: 第{{ profile.rank || '-' }}名</text>
+          <!-- #endif -->
         </view>
       </view>
 
       <!-- 功能入口 -->
       <view class="menu-section">
+        <!-- #ifndef MP-WEIXIN -->
         <view class="menu-item" @tap="navigateTo('/pages/guess/index')">
           <text class="menu-icon">🎯</text>
           <text class="menu-text">去竞猜</text>
           <text class="menu-arrow">〉</text>
         </view>
+        <!-- #endif -->
         <view class="menu-item" @tap="navigateTo('/pages/teams/index')">
           <text class="menu-icon">⚽</text>
           <text class="menu-text">关注球队</text>
           <text class="menu-arrow">〉</text>
         </view>
+        <!-- #ifndef MP-WEIXIN -->
         <view class="menu-item" @tap="navigateTo('/pages/rank/index')">
           <text class="menu-icon">🏆</text>
           <text class="menu-text">排行榜</text>
           <text class="menu-arrow">〉</text>
         </view>
+        <!-- #endif -->
       </view>
 
       <!-- 我的关注 -->
@@ -98,6 +106,7 @@
         </view>
       </view>
 
+      <!-- #ifndef MP-WEIXIN -->
       <!-- 竞猜记录 -->
       <view class="section">
         <view class="section-header">
@@ -130,6 +139,7 @@
           <text class="empty-tip">前往竞猜页面参与比赛预测</text>
         </view>
       </view>
+      <!-- #endif -->
 
       <view class="logout-btn" @tap="handleLogout">退出登录</view>
     </view>

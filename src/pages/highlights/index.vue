@@ -22,8 +22,14 @@
           <text class="card-date">{{ formatDate(item.match_date) }}</text>
         </view>
       </view>
-      <view v-if="highlights.length === 0" class="empty">
+      <view v-if="highlights.length === 0 && !loading" class="empty">
         <text>暂无精彩回放</text>
+      </view>
+      <view v-if="loading" class="load-tip">
+        <text>加载中...</text>
+      </view>
+      <view v-if="!hasMore && highlights.length > 0" class="load-tip">
+        <text>没有更多了</text>
       </view>
     </view>
   </view>
@@ -31,23 +37,50 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import { onReachBottom } from "@dcloudio/uni-app";
 import api from "@/api";
 
 const highlights = ref<any[]>([]);
 const currentType = ref("");
+const page = ref(1);
+const hasMore = ref(true);
+const loading = ref(false);
 
 onMounted(() => {
   fetchHighlights();
 });
 
-const fetchHighlights = async () => {
-  const typeParam = currentType.value ? `?type=${currentType.value}` : "";
-  const res = await api.get(`/api/highlights${typeParam}`);
-  if (res.code === 200) highlights.value = res.data || [];
+const fetchHighlights = async (loadMore = false) => {
+  if (loading.value) return;
+  if (loadMore && !hasMore.value) return;
+  loading.value = true;
+
+  const curPage = loadMore ? page.value + 1 : 1;
+  let params = `?page=${curPage}&pageSize=10`;
+  if (currentType.value) params += `&type=${currentType.value}`;
+
+  const res = await api.get(`/api/highlights${params}`);
+  if (res.code === 200) {
+    const data = res.data;
+    if (loadMore) {
+      highlights.value = [...highlights.value, ...data.list];
+    } else {
+      highlights.value = data.list || [];
+    }
+    page.value = curPage;
+    hasMore.value = data.hasMore;
+  }
+  loading.value = false;
 };
+
+onReachBottom(() => {
+  fetchHighlights(true);
+});
 
 const filterType = (type: string) => {
   currentType.value = type;
+  page.value = 1;
+  hasMore.value = true;
   fetchHighlights();
 };
 
@@ -80,4 +113,5 @@ const formatDate = (date: string) => {
 .card-match { display: flex; justify-content: space-between; font-size: 24rpx; color: #666; }
 .card-date { color: #999; }
 .empty { text-align: center; padding: 100rpx; color: #999; font-size: 28rpx; }
+.load-tip { text-align: center; padding: 30rpx; color: #bbb; font-size: 24rpx; }
 </style>

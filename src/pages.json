@@ -127,12 +127,14 @@
         "iconPath": "static/tab/news.png",
         "selectedIconPath": "static/tab/news-active.png"
       },
+      // #ifndef MP-WEIXIN
       {
         "pagePath": "pages/guess/index",
         "text": "竞猜",
         "iconPath": "static/tab/guess.png",
         "selectedIconPath": "static/tab/guess-active.png"
       },
+      // #endif
       {
         "pagePath": "pages/highlights/index",
         "text": "精彩",
