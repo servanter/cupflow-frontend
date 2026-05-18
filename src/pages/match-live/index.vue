@@ -25,9 +25,9 @@
         <text class="refresh-btn" @tap="fetchLiveMessages">刷新</text>
       </view>
       <view class="timeline">
-        <view class="timeline-item" v-for="msg in messages" :key="msg.id" :class="'type-' + msg.type">
+        <view class="timeline-item" v-for="msg in messages" :key="msg.id" :class="'type-' + typeClass(msg.type)">
           <view class="timeline-time">{{ msg.time }}</view>
-          <view class="timeline-dot" :class="'dot-' + msg.type"></view>
+          <view class="timeline-dot" :class="'dot-' + typeClass(msg.type)"></view>
           <view class="timeline-content">
             <view class="msg-type" v-if="msg.type !== '普通'">{{ getTypeIcon(msg.type) }} {{ msg.type }}</view>
             <text class="msg-text">{{ msg.content }}</text>
@@ -135,6 +135,11 @@ const likeComment = async (commentId: number) => {
   fetchComments();
 };
 
+const typeClass = (type: string) => {
+  const map: Record<string, string> = { "进球": "goal", "黄牌": "yellow", "红牌": "red", "换人": "sub" };
+  return map[type] || "normal";
+};
+
 const getTypeIcon = (type: string) => {
   const icons: Record<string, string> = { "进球": "⚽", "黄牌": "🟨", "红牌": "🟥", "换人": "🔄" };
   return icons[type] || "";
@@ -165,15 +170,15 @@ const formatTime = (time: string) => {
 .timeline-item { display: flex; align-items: flex-start; margin-bottom: 24rpx; position: relative; }
 .timeline-time { width: 70rpx; font-size: 24rpx; color: #999; font-weight: bold; }
 .timeline-dot { width: 16rpx; height: 16rpx; border-radius: 50%; background: #ddd; margin: 6rpx 16rpx 0; flex-shrink: 0; }
-.dot-进球 { background: #4caf50; }
-.dot-黄牌 { background: #ffc107; }
-.dot-红牌 { background: #f44336; }
-.dot-换人 { background: #2196f3; }
+.dot-goal { background: #4caf50; }
+.dot-yellow { background: #ffc107; }
+.dot-red { background: #f44336; }
+.dot-sub { background: #2196f3; }
 .timeline-content { flex: 1; }
 .msg-type { font-size: 22rpx; font-weight: bold; margin-bottom: 4rpx; color: #1a73e8; }
 .msg-text { font-size: 26rpx; color: #333; line-height: 1.5; }
-.type-进球 .timeline-content { background: #e8f5e9; padding: 12rpx; border-radius: 8rpx; }
-.type-红牌 .timeline-content { background: #ffebee; padding: 12rpx; border-radius: 8rpx; }
+.type-goal .timeline-content { background: #e8f5e9; padding: 12rpx; border-radius: 8rpx; }
+.type-red .timeline-content { background: #ffebee; padding: 12rpx; border-radius: 8rpx; }
 .empty { text-align: center; padding: 60rpx; color: #999; font-size: 26rpx; }
 .comment-input { display: flex; align-items: center; gap: 12rpx; margin-bottom: 20rpx; }
 .input-nickname { width: 160rpx; height: 64rpx; border: 1rpx solid #e8e8e8; border-radius: 8rpx; padding: 0 16rpx; font-size: 24rpx; }

@@ -2,8 +2,45 @@
   <view class="container">
     <!-- 未登录状态 -->
     <view v-if="!userStore.isLoggedIn" class="not-login">
-      <text class="login-tip">请先登录查看个人中心</text>
-      <view class="login-btn" @tap="goLogin">登录 / 注册</view>
+      <view class="not-login-header">
+        <view class="not-login-bg"></view>
+        <view class="not-login-content">
+          <view class="avatar-placeholder">
+            <text class="avatar-icon">👤</text>
+          </view>
+          <text class="welcome-text">欢迎来到 CupFlow</text>
+          <text class="welcome-desc">登录后解锁更多精彩功能</text>
+        </view>
+      </view>
+      <view class="not-login-body">
+        <view class="feature-list">
+          <view class="feature-item">
+            <text class="feature-icon">🎯</text>
+            <view class="feature-info">
+              <text class="feature-title">赛事竞猜</text>
+              <text class="feature-desc">参与比赛预测，赢取积分排名</text>
+            </view>
+          </view>
+          <view class="feature-item">
+            <text class="feature-icon">⚽</text>
+            <view class="feature-info">
+              <text class="feature-title">关注球队</text>
+              <text class="feature-desc">关注喜爱的球队，获取最新动态</text>
+            </view>
+          </view>
+          <view class="feature-item">
+            <text class="feature-icon">🏆</text>
+            <view class="feature-info">
+              <text class="feature-title">冠军预测</text>
+              <text class="feature-desc">预测最终冠军，展示你的眼光</text>
+            </view>
+          </view>
+        </view>
+        <view class="login-btn-wrap" @tap="goLogin">
+          <text class="login-btn-text">登录 / 注册</text>
+        </view>
+        <text class="login-hint">登录即可体验全部功能</text>
+      </view>
     </view>
 
     <!-- 已登录状态 -->
@@ -21,17 +58,17 @@
         <view class="menu-item" @tap="navigateTo('/pages/guess/index')">
           <text class="menu-icon">🎯</text>
           <text class="menu-text">去竞猜</text>
-          <text class="menu-arrow">></text>
+          <text class="menu-arrow">〉</text>
         </view>
         <view class="menu-item" @tap="navigateTo('/pages/teams/index')">
           <text class="menu-icon">⚽</text>
           <text class="menu-text">关注球队</text>
-          <text class="menu-arrow">></text>
+          <text class="menu-arrow">〉</text>
         </view>
         <view class="menu-item" @tap="navigateTo('/pages/rank/index')">
           <text class="menu-icon">🏆</text>
           <text class="menu-text">排行榜</text>
-          <text class="menu-arrow">></text>
+          <text class="menu-arrow">〉</text>
         </view>
       </view>
 
@@ -40,9 +77,9 @@
         <view class="section-header">
           <text class="section-title">我的关注</text>
           <text class="section-action" v-if="profile.follows?.length > 0" @tap="navigateTo('/pages/teams/index')">
-            去关注 >
+            去关注 〉
           </text>
-          <text class="section-action" v-else @tap="navigateTo('/pages/teams/index')">去关注 ></text>
+          <text class="section-action" v-else @tap="navigateTo('/pages/teams/index')">去关注 〉</text>
         </view>
         <view class="follow-list" v-if="profile.follows?.length > 0">
           <view class="follow-item" v-for="f in previewFollows" :key="f.id" @tap="goTeam(f.team_id)">
@@ -52,7 +89,7 @@
           </view>
           <view class="more-btn" v-if="profile.follows.length > 2" @tap="navigateTo('/pages/my-follows/index')">
             <text class="more-text">查看全部关注 ({{ profile.follows.length }})</text>
-            <text class="more-arrow">></text>
+            <text class="more-arrow">〉</text>
           </view>
         </view>
         <view v-else class="empty-block">
@@ -66,8 +103,9 @@
         <view class="section-header">
           <text class="section-title">竞猜记录</text>
           <text class="section-action" v-if="profile.guesses?.length > 0" @tap="navigateTo('/pages/guess/index')">
-            去竞猜 >
+            去竞猜 〉
           </text>
+          <text class="section-action" v-else @tap="navigateTo('/pages/guess/index')">去竞猜 〉</text>
         </view>
         <view class="guess-list" v-if="profile.guesses?.length > 0">
           <view class="guess-item" v-for="g in previewGuesses" :key="g.id">
@@ -84,7 +122,7 @@
           </view>
           <view class="more-btn" v-if="profile.guesses.length > 2" @tap="navigateTo('/pages/my-guesses/index')">
             <text class="more-text">查看全部记录 ({{ profile.guesses.length }})</text>
-            <text class="more-arrow">></text>
+            <text class="more-arrow">〉</text>
           </view>
         </view>
         <view v-else class="empty-block">
@@ -163,9 +201,121 @@ const formatDate = (time: string) => {
 
 <style scoped>
 .container { min-height: 100vh; background: #f5f5f5; }
-.not-login { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 200rpx 0; }
-.login-tip { font-size: 28rpx; color: #999; margin-bottom: 30rpx; }
-.login-btn { background: #1a73e8; color: #fff; padding: 20rpx 60rpx; border-radius: 40rpx; font-size: 30rpx; }
+
+/* 未登录状态 */
+.not-login { min-height: 100vh; background: #f0f4f8; }
+.not-login-header {
+  position: relative;
+  height: 400rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.not-login-bg {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: -40rpx;
+  background: linear-gradient(160deg, #0d47a1 0%, #1a73e8 50%, #42a5f5 100%);
+  border-radius: 0 0 50rpx 50rpx;
+}
+.not-login-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.avatar-placeholder {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 4rpx dashed rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24rpx;
+}
+.avatar-icon {
+  font-size: 64rpx;
+}
+.welcome-text {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #fff;
+}
+.welcome-desc {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 10rpx;
+}
+
+.not-login-body {
+  margin: -20rpx 32rpx 0;
+  position: relative;
+  z-index: 2;
+}
+.feature-list {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 16rpx 32rpx;
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.06);
+}
+.feature-item {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+.feature-item:last-child {
+  border-bottom: none;
+}
+.feature-icon {
+  font-size: 48rpx;
+  margin-right: 24rpx;
+}
+.feature-info {
+  flex: 1;
+}
+.feature-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  display: block;
+}
+.feature-desc {
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 6rpx;
+  display: block;
+}
+
+.login-btn-wrap {
+  margin-top: 40rpx;
+  height: 96rpx;
+  background: linear-gradient(135deg, #1a73e8, #0d47a1);
+  border-radius: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(26, 115, 232, 0.35);
+}
+.login-btn-wrap:active {
+  opacity: 0.85;
+  transform: scale(0.98);
+}
+.login-btn-text {
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: bold;
+  letter-spacing: 4rpx;
+}
+.login-hint {
+  display: block;
+  text-align: center;
+  margin-top: 24rpx;
+  font-size: 22rpx;
+  color: #bbb;
+}
 .user-header { background: linear-gradient(135deg, #1a73e8, #0d47a1); padding: 50rpx 40rpx; display: flex; align-items: center; gap: 24rpx; }
 .avatar { width: 110rpx; height: 110rpx; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 44rpx; color: #fff; font-weight: bold; line-height: 110rpx; text-align: center; }
 .user-info { flex: 1; }

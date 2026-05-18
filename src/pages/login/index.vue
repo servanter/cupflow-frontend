@@ -1,26 +1,51 @@
 <template>
-  <view class="container">
-    <view class="login-card">
-      <text class="title">{{ isLogin ? '登录' : '注册' }}</text>
-      <view class="form">
-        <view class="form-item">
-          <text class="label">昵称</text>
-          <input v-model="form.nickname" placeholder="输入你的昵称" class="input" />
+  <view class="page">
+    <!-- 顶部背景区域 -->
+    <view class="header">
+      <view class="header-bg"></view>
+      <view class="logo-area">
+        <text class="logo-icon">⚽</text>
+        <text class="app-name">CupFlow</text>
+        <text class="app-desc">世界杯赛事互动平台</text>
+      </view>
+    </view>
+
+    <!-- 表单卡片 -->
+    <view class="form-card">
+      <!-- 切换Tab -->
+      <view class="tab-bar">
+        <view class="tab-item" :class="{ active: isLogin }" @tap="isLogin = true">
+          <text>登录</text>
         </view>
-        <view class="form-item">
-          <text class="label">密码</text>
-          <input v-model="form.password" type="password" placeholder="输入密码" class="input" />
-        </view>
-        <view class="form-item" v-if="!isLogin">
-          <text class="label">确认密码</text>
-          <input v-model="form.confirmPassword" type="password" placeholder="再次输入密码" class="input" />
+        <view class="tab-item" :class="{ active: !isLogin }" @tap="isLogin = false">
+          <text>注册</text>
         </view>
       </view>
+
+      <!-- 输入区 -->
+      <view class="form-body">
+        <view class="input-wrap">
+          <text class="input-icon">👤</text>
+          <input v-model="form.nickname" placeholder="请输入昵称" class="input" placeholder-class="placeholder" />
+        </view>
+        <view class="input-wrap">
+          <text class="input-icon">🔒</text>
+          <input v-model="form.password" type="password" placeholder="请输入密码" class="input" placeholder-class="placeholder" />
+        </view>
+        <view class="input-wrap" v-if="!isLogin">
+          <text class="input-icon">🔒</text>
+          <input v-model="form.confirmPassword" type="password" placeholder="请再次输入密码" class="input" placeholder-class="placeholder" />
+        </view>
+      </view>
+
+      <!-- 提交按钮 -->
       <view class="submit-btn" @tap="handleSubmit">
-        <text>{{ isLogin ? '登录' : '注册' }}</text>
+        <text>{{ isLogin ? '登 录' : '注 册' }}</text>
       </view>
-      <view class="switch-mode" @tap="isLogin = !isLogin">
-        <text>{{ isLogin ? '没有账号？去注册' : '已有账号？去登录' }}</text>
+
+      <!-- 底部切换 -->
+      <view class="footer">
+        <text class="footer-text" @tap="isLogin = !isLogin">{{ isLogin ? '还没有账号？立即注册' : '已有账号？返回登录' }}</text>
       </view>
     </view>
   </view>
@@ -62,15 +87,156 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
-.container { min-height: 100vh; background: #f5f5f5; display: flex; align-items: center; justify-content: center; padding: 40rpx; }
-.login-card { width: 100%; background: #fff; border-radius: 16rpx; padding: 50rpx 40rpx; }
-.title { font-size: 40rpx; font-weight: bold; color: #333; text-align: center; display: block; margin-bottom: 50rpx; }
-.form { margin-bottom: 40rpx; }
-.form-item { margin-bottom: 24rpx; }
-.label { font-size: 26rpx; color: #666; display: block; margin-bottom: 10rpx; }
-.input { width: 100%; height: 80rpx; border: 1rpx solid #e8e8e8; border-radius: 8rpx; padding: 0 20rpx; font-size: 28rpx; box-sizing: border-box; }
-.submit-btn { background: #1a73e8; padding: 24rpx; border-radius: 40rpx; text-align: center; }
-.submit-btn text { color: #fff; font-size: 30rpx; font-weight: bold; }
-.switch-mode { text-align: center; margin-top: 30rpx; }
-.switch-mode text { font-size: 26rpx; color: #1a73e8; }
+.page {
+  min-height: 100vh;
+  background: #f0f4f8;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 顶部背景 */
+.header {
+  position: relative;
+  height: 480rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.header-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: -60rpx;
+  background: linear-gradient(160deg, #0d47a1 0%, #1a73e8 50%, #42a5f5 100%);
+  border-radius: 0 0 60rpx 60rpx;
+}
+.logo-area {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.logo-icon {
+  font-size: 100rpx;
+  margin-bottom: 16rpx;
+}
+.app-name {
+  font-size: 52rpx;
+  font-weight: bold;
+  color: #fff;
+  letter-spacing: 4rpx;
+}
+.app-desc {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: 10rpx;
+}
+
+/* 表单卡片 */
+.form-card {
+  margin: -60rpx 40rpx 0;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 0 40rpx 50rpx;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 8rpx 40rpx rgba(0, 0, 0, 0.08);
+}
+
+/* Tab切换 */
+.tab-bar {
+  display: flex;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 36rpx 0 28rpx;
+  font-size: 30rpx;
+  color: #999;
+  position: relative;
+  transition: color 0.3s;
+}
+.tab-item.active {
+  color: #1a73e8;
+  font-weight: bold;
+}
+.tab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60rpx;
+  height: 6rpx;
+  background: #1a73e8;
+  border-radius: 3rpx;
+}
+
+/* 输入区 */
+.form-body {
+  padding-top: 40rpx;
+}
+.input-wrap {
+  display: flex;
+  align-items: center;
+  background: #f7f8fa;
+  border-radius: 16rpx;
+  padding: 0 24rpx;
+  height: 96rpx;
+  margin-bottom: 24rpx;
+  border: 2rpx solid transparent;
+  transition: border-color 0.3s;
+}
+.input-wrap:focus-within {
+  border-color: #1a73e8;
+  background: #fff;
+}
+.input-icon {
+  font-size: 36rpx;
+  margin-right: 20rpx;
+}
+.input {
+  flex: 1;
+  height: 96rpx;
+  font-size: 28rpx;
+  color: #333;
+}
+.placeholder {
+  color: #bbb;
+}
+
+/* 提交按钮 */
+.submit-btn {
+  margin-top: 20rpx;
+  height: 96rpx;
+  background: linear-gradient(135deg, #1a73e8, #0d47a1);
+  border-radius: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(26, 115, 232, 0.35);
+}
+.submit-btn:active {
+  opacity: 0.85;
+  transform: scale(0.98);
+}
+.submit-btn text {
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: bold;
+  letter-spacing: 8rpx;
+}
+
+/* 底部 */
+.footer {
+  text-align: center;
+  margin-top: 36rpx;
+}
+.footer-text {
+  font-size: 26rpx;
+  color: #999;
+}
 </style>

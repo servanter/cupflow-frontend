@@ -10,7 +10,7 @@
     <view class="section">
       <view class="section-header">
         <text class="section-title">最近赛程</text>
-        <text class="section-more" @tap="goToMatches">全部赛程 ></text>
+        <text class="section-more" @tap="goToMatches">全部赛程 〉</text>
       </view>
       <scroll-view scroll-x class="match-scroll" v-if="upcomingMatches.length > 0">
         <view class="match-card" v-for="match in upcomingMatches" :key="match.id" @tap="goToLive(match.id)">
@@ -46,7 +46,7 @@
     <view class="section">
       <view class="section-header">
         <text class="section-title">参赛球队</text>
-        <text class="section-more" @tap="goToAllTeams">全部球队 ></text>
+        <text class="section-more" @tap="goToAllTeams">全部球队 〉</text>
       </view>
       <scroll-view scroll-x class="team-scroll" v-if="hotTeams.length > 0">
         <view class="team-card" v-for="t in hotTeams" :key="t.id" @tap="goToTeamDetail(t.id)">
