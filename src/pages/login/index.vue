@@ -12,7 +12,9 @@
 
     <!-- 表单卡片 -->
     <view class="form-card">
-      <!-- 切换Tab -->
+
+      <!-- #ifndef MP-WEIXIN -->
+      <!-- 切换Tab（非微信版本保留账号密码登录） -->
       <view class="tab-bar">
         <view class="tab-item" :class="{ active: isLogin }" @tap="isLogin = true">
           <text>登录</text>
@@ -47,6 +49,35 @@
       <view class="footer">
         <text class="footer-text" @tap="isLogin = !isLogin">{{ isLogin ? '还没有账号？立即注册' : '已有账号？返回登录' }}</text>
       </view>
+      <!-- #endif -->
+
+      <!-- #ifdef MP-WEIXIN -->
+      <!-- 微信授权登录区域 -->
+      <view class="wx-login-area">
+        <view class="wx-desc">
+          <text class="wx-desc-text">授权微信账号即可快速登录</text>
+          <text class="wx-desc-sub">安全、便捷，无需注册</text>
+        </view>
+        <button
+          class="wx-login-btn"
+          @tap="handleWxLogin"
+          :loading="wxLoading"
+          :disabled="wxLoading"
+        >
+          <view class="wx-btn-inner">
+            <text class="wx-btn-icon">💬</text>
+            <text class="wx-btn-text">{{ wxLoading ? '登录中...' : '微信授权登录' }}</text>
+          </view>
+        </button>
+        <view class="wx-privacy-tip">
+          <text class="wx-privacy-text">登录即表示同意</text>
+          <text class="wx-privacy-link">《用户协议》</text>
+          <text class="wx-privacy-text">与</text>
+          <text class="wx-privacy-link">《隐私政策》</text>
+        </view>
+      </view>
+      <!-- #endif -->
+
     </view>
   </view>
 </template>
@@ -56,6 +87,8 @@ import { ref } from "vue";
 import { useUserStore } from "@/store/user";
 
 const userStore = useUserStore();
+
+// #ifndef MP-WEIXIN
 const isLogin = ref(true);
 const form = ref({ nickname: "", password: "", confirmPassword: "" });
 
@@ -84,6 +117,46 @@ const handleSubmit = async () => {
     uni.showToast({ title: err.message || "操作失败", icon: "none" });
   }
 };
+// #endif
+
+// #ifdef MP-WEIXIN
+const wxLoading = ref(false);
+
+const handleWxLogin = async () => {
+  wxLoading.value = true;
+  try {
+    // 第一步：获取 code
+    const loginRes = await new Promise<any>((resolve, reject) => {
+      uni.login({
+        provider: "weixin",
+        success: resolve,
+        fail: reject,
+      });
+    });
+
+    // 第二步：获取用户信息（模拟器有效，真机受微信隐私限制只返回默认值）
+    const infoRes = await new Promise<any>((resolve) => {
+      uni.getUserInfo({
+        provider: "weixin",
+        success: resolve,
+        fail: () => resolve({ userInfo: {} }), // 失败也继续登录
+      });
+    });
+
+    console.log('loginRes', loginRes, infoRes);
+    await userStore.wxLogin(loginRes.code, infoRes.userInfo);
+
+    uni.showToast({ title: "登录成功", icon: "success" });
+    setTimeout(() => {
+      uni.navigateBack();
+    }, 1000);
+  } catch (err: any) {
+    uni.showToast({ title: err.message || "登录失败，请重试", icon: "none" });
+  } finally {
+    wxLoading.value = false;
+  }
+};
+// #endif
 </script>
 
 <style scoped>
@@ -238,5 +311,72 @@ const handleSubmit = async () => {
 .footer-text {
   font-size: 26rpx;
   color: #999;
+}
+
+/* 微信登录区域 */
+.wx-login-area {
+  padding: 60rpx 0 20rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.wx-desc {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 50rpx;
+}
+.wx-desc-text {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 500;
+}
+.wx-desc-sub {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 12rpx;
+}
+.wx-login-btn {
+  width: 100%;
+  height: 96rpx;
+  background: linear-gradient(135deg, #07c160, #06ad56) !important;
+  border-radius: 48rpx !important;
+  border: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(7, 193, 96, 0.35);
+  padding: 0 !important;
+}
+.wx-login-btn::after {
+  border: none !important;
+}
+.wx-btn-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+}
+.wx-btn-icon {
+  font-size: 36rpx;
+}
+.wx-btn-text {
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: bold;
+  letter-spacing: 4rpx;
+}
+.wx-privacy-tip {
+  display: flex;
+  align-items: center;
+  margin-top: 40rpx;
+}
+.wx-privacy-text {
+  font-size: 22rpx;
+  color: #bbb;
+}
+.wx-privacy-link {
+  font-size: 22rpx;
+  color: #1a73e8;
 }
 </style>

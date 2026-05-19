@@ -1,5 +1,5 @@
 // API 基础配置 - 生产环境请修改为实际域名
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+const BASE_URL = "http://api.cup.aimage.top/";
 
 // 获取存储的token
 function getToken(): string {

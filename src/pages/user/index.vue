@@ -48,7 +48,10 @@
     <!-- 已登录状态 -->
     <view v-else>
       <view class="user-header">
-        <view class="avatar">{{ userStore.nickname.charAt(0) }}</view>
+        <view class="avatar">
+          <image v-if="userStore.avatarUrl" :src="userStore.avatarUrl" class="avatar-img" mode="aspectFill" />
+          <text v-else class="avatar-text">{{ userStore.nickname.charAt(0) }}</text>
+        </view>
         <view class="user-info">
           <text class="nickname">{{ userStore.nickname }}</text>
           <!-- #ifndef MP-WEIXIN -->
@@ -327,7 +330,9 @@ const formatDate = (time: string) => {
   color: #bbb;
 }
 .user-header { background: linear-gradient(135deg, #1a73e8, #0d47a1); padding: 50rpx 40rpx; display: flex; align-items: center; gap: 24rpx; }
-.avatar { width: 110rpx; height: 110rpx; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 44rpx; color: #fff; font-weight: bold; line-height: 110rpx; text-align: center; }
+.avatar { width: 110rpx; height: 110rpx; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 44rpx; color: #fff; font-weight: bold; overflow: hidden; }
+.avatar-img { width: 110rpx; height: 110rpx; border-radius: 50%; }
+.avatar-text { font-size: 44rpx; color: #fff; font-weight: bold; line-height: 110rpx; text-align: center; }
 .user-info { flex: 1; }
 .nickname { font-size: 36rpx; font-weight: bold; color: #fff; display: block; }
 .user-meta { font-size: 24rpx; color: rgba(255,255,255,0.8); margin-top: 10rpx; display: block; }

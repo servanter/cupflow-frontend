@@ -7,6 +7,7 @@ interface UserState {
   userId: number;
   nickname: string;
   points: number;
+  avatarUrl: string;
 }
 
 export const useUserStore = defineStore("user", {
@@ -16,6 +17,7 @@ export const useUserStore = defineStore("user", {
     userId: 0,
     nickname: "",
     points: 0,
+    avatarUrl: "",
   }),
 
   actions: {
@@ -29,6 +31,7 @@ export const useUserStore = defineStore("user", {
         this.userId = info.userId;
         this.nickname = info.nickname;
         this.points = info.points || 0;
+        this.avatarUrl = info.avatarUrl || "";
       }
     },
 
@@ -40,11 +43,32 @@ export const useUserStore = defineStore("user", {
         this.userId = res.data.userId;
         this.nickname = res.data.nickname;
         this.points = res.data.points || 0;
+        this.avatarUrl = res.data.avatarUrl || "";
         uni.setStorageSync("user_token", res.data.token);
         uni.setStorageSync("user_info", JSON.stringify(res.data));
         return true;
       }
       throw new Error(res.message || "登录失败");
+    },
+
+    async wxLogin(code: string, userInfo?: any) {
+      const res = await api.post("/api/user/wechat-login", {
+        code,
+        nickname: userInfo?.nickName || "",
+        avatarUrl: userInfo?.avatarUrl || "",
+      });
+      if (res.code === 200 && res.data) {
+        this.token = res.data.token;
+        this.isLoggedIn = true;
+        this.userId = res.data.userId;
+        this.nickname = res.data.nickname;
+        this.points = res.data.points || 0;
+        this.avatarUrl = res.data.avatarUrl || "";
+        uni.setStorageSync("user_token", res.data.token);
+        uni.setStorageSync("user_info", JSON.stringify(res.data));
+        return true;
+      }
+      throw new Error(res.message || "微信登录失败");
     },
 
     async register(nickname: string, password: string) {
@@ -55,6 +79,7 @@ export const useUserStore = defineStore("user", {
         this.userId = res.data.userId;
         this.nickname = res.data.nickname;
         this.points = 0;
+        this.avatarUrl = "";
         uni.setStorageSync("user_token", res.data.token);
         uni.setStorageSync("user_info", JSON.stringify(res.data));
         return true;
@@ -68,6 +93,7 @@ export const useUserStore = defineStore("user", {
       this.userId = 0;
       this.nickname = "";
       this.points = 0;
+      this.avatarUrl = "";
       uni.removeStorageSync("user_token");
       uni.removeStorageSync("user_info");
     },
