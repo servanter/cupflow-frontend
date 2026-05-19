@@ -47,9 +47,10 @@
 
     <!-- 已登录状态 -->
     <view v-else>
-      <view class="user-header">
+      <view class="user-header" @tap="goEditProfile">
         <view class="avatar">
-          <text class="avatar-text">{{ userStore.nickname.charAt(0) }}</text>
+          <image v-if="displayAvatarUrl" :src="displayAvatarUrl" class="avatar-img" mode="aspectFill" />
+          <text v-else class="avatar-text">{{ userStore.nickname.charAt(0) }}</text>
         </view>
         <view class="user-info">
           <text class="nickname">{{ userStore.nickname }}</text>
@@ -57,6 +58,7 @@
           <text class="user-meta">积分: {{ profile.points || 0 }} | 排名: 第{{ profile.rank || '-' }}名</text>
           <!-- #endif -->
         </view>
+        <text class="edit-arrow">编辑 〉</text>
       </view>
 
       <!-- 功能入口 -->
@@ -154,8 +156,18 @@ import { onShow } from "@dcloudio/uni-app";
 import api from "@/api";
 import { useUserStore } from "@/store/user";
 
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string || "http://localhost:3000").replace(/\/$/, "");
+
 const userStore = useUserStore();
 const profile = ref<any>({});
+
+// 头像完整 URL
+const displayAvatarUrl = computed(() => {
+  const url = userStore.avatarUrl;
+  if (!url) return "";
+  if (url.startsWith("http")) return url;
+  return BASE_URL + url;
+});
 
 // 只显示前2条预览
 const previewFollows = computed(() => (profile.value.follows || []).slice(0, 2));
@@ -171,11 +183,21 @@ onShow(() => {
 
 const fetchProfile = async () => {
   const res = await api.get("/api/user/profile", true);
-  if (res.code === 200) profile.value = res.data;
+  if (res.code === 200) {
+    profile.value = res.data;
+    // 同步头像和昵称到 store
+    if (res.data.avatar_url && res.data.avatar_url !== userStore.avatarUrl) {
+      userStore.updateProfile(res.data.nickname || userStore.nickname, res.data.avatar_url);
+    }
+  }
 };
 
 const goLogin = () => {
   uni.navigateTo({ url: "/pages/login/index" });
+};
+
+const goEditProfile = () => {
+  uni.navigateTo({ url: "/pages/wx-profile/index?mode=edit" });
 };
 
 const goTeam = (teamId: number) => {
@@ -335,6 +357,7 @@ const formatDate = (time: string) => {
 .user-info { flex: 1; }
 .nickname { font-size: 36rpx; font-weight: bold; color: #fff; display: block; }
 .user-meta { font-size: 24rpx; color: rgba(255,255,255,0.8); margin-top: 10rpx; display: block; }
+.edit-arrow { font-size: 24rpx; color: rgba(255,255,255,0.8); }
 .menu-section { margin: 20rpx; background: #fff; border-radius: 12rpx; overflow: hidden; }
 .menu-item { display: flex; align-items: center; padding: 28rpx 24rpx; border-bottom: 1rpx solid #f5f5f5; }
 .menu-item:last-child { border-bottom: none; }
