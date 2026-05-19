@@ -141,7 +141,8 @@ const handleWxLogin = async () => {
 
     uni.showToast({ title: "登录成功", icon: "success" });
     setTimeout(() => {
-      uni.navigateBack();
+      // 微信登录后跳转完善资料页
+      uni.redirectTo({ url: "/pages/edit-profile/index?mode=first" });
     }, 800);
   } catch (err: any) {
     uni.showToast({ title: err.message || "登录失败，请重试", icon: "none" });
