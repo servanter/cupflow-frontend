@@ -15,6 +15,11 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import api from "@/api";
+// #ifdef MP-WEIXIN
+import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
+onShareAppMessage(() => ({ title: "2026世界杯参赛球队", path: "/pages/teams/index", imageUrl: "/static/logo.png" }));
+onShareTimeline(() => ({ title: "2026世界杯参赛球队", imageUrl: "/static/logo.png" }));
+// #endif
 
 const teams = ref<any[]>([]);
 

@@ -36,11 +36,26 @@ import { ref, onMounted } from "vue";
 import api from "@/api";
 
 const player = ref<any>({});
+const playerId = ref("");
+
+// #ifdef MP-WEIXIN
+import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
+onShareAppMessage(() => ({
+  title: player.value.name ? `${player.value.name} - 球员资料` : "CupFlow - 球员详情",
+  path: `/pages/player-detail/index?id=${playerId.value}`,
+  imageUrl: "/static/logo.png",
+}));
+onShareTimeline(() => ({
+  title: player.value.name ? `${player.value.name} - 球员资料` : "CupFlow - 球员详情",
+  imageUrl: "/static/logo.png",
+}));
+// #endif
 
 onMounted(() => {
   const pages = getCurrentPages();
   const currentPage = pages[pages.length - 1] as any;
   const id = currentPage.$page?.options?.id || currentPage.options?.id;
+  playerId.value = id;
   fetchPlayer(id);
 });
 

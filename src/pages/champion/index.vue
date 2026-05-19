@@ -29,6 +29,11 @@
 import { ref, onMounted, computed } from "vue";
 import api from "@/api";
 import { useUserStore } from "@/store/user";
+// #ifdef MP-WEIXIN
+import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
+onShareAppMessage(() => ({ title: "你觉得谁能夺冠？", path: "/pages/champion/index", imageUrl: "/static/logo.png" }));
+onShareTimeline(() => ({ title: "你觉得谁能夺冠？", imageUrl: "/static/logo.png" }));
+// #endif
 
 const userStore = useUserStore();
 const predictions = ref<any[]>([]);

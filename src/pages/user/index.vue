@@ -197,11 +197,7 @@ const goLogin = () => {
 };
 
 const goEditProfile = () => {
-<<<<<<< HEAD
   uni.navigateTo({ url: "/pages/edit-profile/index" });
-=======
-  uni.navigateTo({ url: "/pages/wx-profile/index?mode=edit" });
->>>>>>> 65ff74b5f4f15cdca8033aaa83ae0567b97d5715
 };
 
 const goTeam = (teamId: number) => {

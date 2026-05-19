@@ -64,6 +64,19 @@ import api from "@/api";
 
 const detail = ref<any>({});
 const newsId = ref(0);
+
+// #ifdef MP-WEIXIN
+import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
+onShareAppMessage(() => ({
+  title: detail.value.title || "CupFlow - 足球资讯",
+  path: `/pages/news-detail/index?id=${newsId.value}`,
+  imageUrl: "/static/logo.png",
+}));
+onShareTimeline(() => ({
+  title: detail.value.title || "CupFlow - 足球资讯",
+  imageUrl: "/static/logo.png",
+}));
+// #endif
 const tags = ["经典回顾", "球星故事", "历届盘点", "转会动态", "战术解析"];
 
 // 将B站链接转为嵌入播放器地址

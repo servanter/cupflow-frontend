@@ -3,55 +3,64 @@
     {
       "path": "pages/index/index",
       "style": {
-        "navigationBarTitleText": "CupFlow - 世界杯"
+        "navigationBarTitleText": "CupFlow - 世界杯",
+        "mp-weixin": { "enableShareTimeline": true }
       }
     },
     {
       "path": "pages/match-live/index",
       "style": {
-        "navigationBarTitleText": "文字直播"
+        "navigationBarTitleText": "文字直播",
+        "mp-weixin": { "enableShareTimeline": true }
       }
     },
     {
       "path": "pages/highlights/index",
       "style": {
-        "navigationBarTitleText": "精彩回放"
+        "navigationBarTitleText": "精彩回放",
+        "mp-weixin": { "enableShareTimeline": true }
       }
     },
     {
       "path": "pages/highlight-detail/index",
       "style": {
-        "navigationBarTitleText": "回放详情"
+        "navigationBarTitleText": "回放详情",
+        "mp-weixin": { "enableShareTimeline": true }
       }
     },
     {
       "path": "pages/teams/index",
       "style": {
-        "navigationBarTitleText": "参赛球队"
+        "navigationBarTitleText": "参赛球队",
+        "mp-weixin": { "enableShareTimeline": true }
       }
     },
     {
       "path": "pages/team-detail/index",
       "style": {
-        "navigationBarTitleText": "球队详情"
+        "navigationBarTitleText": "球队详情",
+        "mp-weixin": { "enableShareTimeline": true }
       }
     },
     {
       "path": "pages/player-detail/index",
       "style": {
-        "navigationBarTitleText": "球员详情"
+        "navigationBarTitleText": "球员详情",
+        "mp-weixin": { "enableShareTimeline": true }
       }
     },
     {
       "path": "pages/guess/index",
       "style": {
-        "navigationBarTitleText": "竞猜投票"
+        "navigationBarTitleText": "竞猜投票",
+        "mp-weixin": { "enableShareTimeline": true }
       }
     },
     {
       "path": "pages/rank/index",
       "style": {
-        "navigationBarTitleText": "积分排行"
+        "navigationBarTitleText": "积分排行",
+        "mp-weixin": { "enableShareTimeline": true }
       }
     },
     {
@@ -69,13 +78,15 @@
     {
       "path": "pages/standings/index",
       "style": {
-        "navigationBarTitleText": "积分榜"
+        "navigationBarTitleText": "积分榜",
+        "mp-weixin": { "enableShareTimeline": true }
       }
     },
     {
       "path": "pages/champion/index",
       "style": {
-        "navigationBarTitleText": "冠军预测"
+        "navigationBarTitleText": "冠军预测",
+        "mp-weixin": { "enableShareTimeline": true }
       }
     },
     {
@@ -93,19 +104,22 @@
     {
       "path": "pages/schedule/index",
       "style": {
-        "navigationBarTitleText": "全部赛程"
+        "navigationBarTitleText": "全部赛程",
+        "mp-weixin": { "enableShareTimeline": true }
       }
     },
     {
       "path": "pages/news/index",
       "style": {
-        "navigationBarTitleText": "足球资讯"
+        "navigationBarTitleText": "足球资讯",
+        "mp-weixin": { "enableShareTimeline": true }
       }
     },
     {
       "path": "pages/news-detail/index",
       "style": {
-        "navigationBarTitleText": "资讯详情"
+        "navigationBarTitleText": "资讯详情",
+        "mp-weixin": { "enableShareTimeline": true }
       }
     },
     {

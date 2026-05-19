@@ -101,6 +101,18 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+// #ifdef MP-WEIXIN
+import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
+onShareAppMessage(() => ({
+  title: "CupFlow - 2026世界杯赛事互动",
+  path: "/pages/index/index",
+  imageUrl: "/static/logo.png",
+}));
+onShareTimeline(() => ({
+  title: "CupFlow - 2026世界杯赛事互动",
+  imageUrl: "/static/logo.png",
+}));
+// #endif
 import api from "@/api";
 import { useUserStore } from "@/store/user";
 

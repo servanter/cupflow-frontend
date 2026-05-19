@@ -33,6 +33,19 @@ import api from "@/api";
 const detail = ref<any>({});
 const highlightId = ref(0);
 
+// #ifdef MP-WEIXIN
+import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
+onShareAppMessage(() => ({
+  title: detail.value.title ? `${detail.value.title} - 精彩回放` : "CupFlow - 精彩回放",
+  path: `/pages/highlight-detail/index?id=${highlightId.value}`,
+  imageUrl: "/static/logo.png",
+}));
+onShareTimeline(() => ({
+  title: detail.value.title ? `${detail.value.title} - 精彩回放` : "CupFlow - 精彩回放",
+  imageUrl: "/static/logo.png",
+}));
+// #endif
+
 onMounted(() => {
   const pages = getCurrentPages();
   const currentPage = pages[pages.length - 1] as any;
