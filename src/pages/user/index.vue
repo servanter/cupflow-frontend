@@ -185,7 +185,11 @@ const fetchProfile = async () => {
   const res = await api.get("/api/user/profile", true);
   if (res.code === 200) {
     profile.value = res.data;
+<<<<<<< HEAD
     // 同步头像到 store
+=======
+    // 同步头像和昵称到 store
+>>>>>>> 65ff74b5f4f15cdca8033aaa83ae0567b97d5715
     if (res.data.avatar_url && res.data.avatar_url !== userStore.avatarUrl) {
       userStore.updateProfile(res.data.nickname || userStore.nickname, res.data.avatar_url);
     }
@@ -197,7 +201,11 @@ const goLogin = () => {
 };
 
 const goEditProfile = () => {
+<<<<<<< HEAD
   uni.navigateTo({ url: "/pages/edit-profile/index" });
+=======
+  uni.navigateTo({ url: "/pages/wx-profile/index?mode=edit" });
+>>>>>>> 65ff74b5f4f15cdca8033aaa83ae0567b97d5715
 };
 
 const goTeam = (teamId: number) => {

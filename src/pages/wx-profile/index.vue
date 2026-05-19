@@ -1,7 +1,7 @@
 <template>
   <view class="page">
     <view class="header">
-      <text class="header-tip">完善以下信息，开始体验 CupFlow</text>
+      <text class="header-tip">{{ isEdit ? '修改你的个人资料' : '完善以下信息，开始体验 CupFlow' }}</text>
     </view>
 
     <!-- 头像选择 -->
@@ -9,15 +9,16 @@
       <text class="section-label">我的头像</text>
       <button class="avatar-btn" open-type="chooseAvatar" @chooseavatar="onChooseAvatar">
         <view class="avatar-wrap">
-          <image v-if="avatarUrl" :src="avatarUrl" class="avatar-img" mode="aspectFill" />
+          <image v-if="displayUrl" :src="displayUrl" class="avatar-img" mode="aspectFill" />
           <view v-else class="avatar-placeholder">
             <text class="avatar-placeholder-icon">📷</text>
           </view>
-          <view class="avatar-edit-tag">
-            <text class="avatar-edit-text">点击选择</text>
+          <view class="avatar-edit-icon">
+            <text class="edit-icon-text">✎</text>
           </view>
         </view>
       </button>
+      <text v-if="uploading" class="section-tip">正在上传头像...</text>
     </view>
 
     <!-- 昵称输入 -->
@@ -39,28 +40,99 @@
     <!-- 完成按钮 -->
     <view class="submit-area">
       <view class="submit-btn" :class="{ disabled: !canSubmit || submitting }" @tap="handleSubmit">
-        <text class="submit-text">{{ submitting ? '保存中...' : '完成' }}</text>
+        <text class="submit-text">{{ submitting ? '保存中...' : '保存' }}</text>
       </view>
-      <text class="skip-text" @tap="handleSkip">跳过，稍后再设置</text>
+      <text v-if="!isEdit" class="skip-text" @tap="handleSkip">跳过，稍后再设置</text>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
+import { onLoad } from "@dcloudio/uni-app";
 import { useUserStore } from "@/store/user";
 import api from "@/api";
 
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string || "http://localhost:3000").replace(/\/$/, "");
+
 const userStore = useUserStore();
-const avatarUrl = ref(userStore.avatarUrl || "");
 const nickname = ref(userStore.nickname || "");
 const submitting = ref(false);
+const uploading = ref(false);
+const isEdit = ref(false);
 
-const canSubmit = computed(() => nickname.value.trim().length > 0);
+// 已上传到服务器的头像 URL（相对路径，用于提交给后端）
+const serverAvatarUrl = ref(userStore.avatarUrl || "");
+// 用于显示的临时文件路径（选择头像后的 tempFilePath）
+const tempDisplayUrl = ref("");
 
-// 用户选择头像回调
-const onChooseAvatar = (e: any) => {
-  avatarUrl.value = e.detail.avatarUrl;
+// 显示用的完整 URL
+const displayUrl = computed(() => {
+  // 优先显示刚选的临时图片
+  if (tempDisplayUrl.value) return tempDisplayUrl.value;
+  // 从 store 读取的相对路径需要拼接 BASE_URL
+  if (serverAvatarUrl.value) {
+    if (serverAvatarUrl.value.startsWith("http")) return serverAvatarUrl.value;
+    return BASE_URL + serverAvatarUrl.value;
+  }
+  return "";
+});
+
+onLoad((options: any) => {
+  if (options?.mode === "edit") {
+    isEdit.value = true;
+    uni.setNavigationBarTitle({ title: "编辑资料" });
+  } else {
+    uni.setNavigationBarTitle({ title: "完善资料" });
+  }
+});
+
+const canSubmit = computed(() => nickname.value.trim().length > 0 && !uploading.value);
+
+// 用户选择头像回调 → 上传到后端
+const onChooseAvatar = async (e: any) => {
+  const tempFilePath = e.detail.avatarUrl;
+  tempDisplayUrl.value = tempFilePath; // 先显示临时图片
+  uploading.value = true;
+
+  try {
+    const token = uni.getStorageSync("user_token") || "";
+    const res: any = await new Promise((resolve, reject) => {
+      uni.uploadFile({
+        url: BASE_URL + "/api/user/avatar/upload",
+        filePath: tempFilePath,
+        name: "file",
+        header: {
+          Authorization: `Bearer ${token}`,
+        },
+        success: (uploadRes: any) => {
+          try {
+            const data = JSON.parse(uploadRes.data);
+            resolve(data);
+          } catch {
+            reject(new Error("解析响应失败"));
+          }
+        },
+        fail: (err: any) => {
+          reject(err);
+        },
+      });
+    });
+
+    if (res.code === 200) {
+      serverAvatarUrl.value = res.data.avatarUrl;
+      // 上传成功后清除临时路径，displayUrl 会使用 serverAvatarUrl
+      tempDisplayUrl.value = "";
+    } else {
+      uni.showToast({ title: res.message || "上传失败", icon: "none" });
+      tempDisplayUrl.value = "";
+    }
+  } catch (err: any) {
+    uni.showToast({ title: "头像上传失败", icon: "none" });
+    tempDisplayUrl.value = "";
+  } finally {
+    uploading.value = false;
+  }
 };
 
 const handleSubmit = async () => {
@@ -69,12 +141,12 @@ const handleSubmit = async () => {
   try {
     const res = await api.post("/api/user/profile/update", {
       nickname: nickname.value.trim(),
-      avatarUrl: avatarUrl.value,
+      avatarUrl: serverAvatarUrl.value,
     }, true);
 
     if (res.code === 200) {
       // 更新本地 store
-      userStore.updateProfile(nickname.value.trim(), avatarUrl.value);
+      userStore.updateProfile(nickname.value.trim(), serverAvatarUrl.value);
       uni.showToast({ title: "保存成功", icon: "success" });
       setTimeout(() => {
         uni.navigateBack();
@@ -176,17 +248,23 @@ const handleSkip = () => {
 .avatar-placeholder-icon {
   font-size: 60rpx;
 }
-.avatar-edit-tag {
+.avatar-edit-icon {
   position: absolute;
-  bottom: 0;
-  right: 0;
+  bottom: 4rpx;
+  right: 4rpx;
+  width: 44rpx;
+  height: 44rpx;
   background: #1a73e8;
-  border-radius: 20rpx;
-  padding: 6rpx 14rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3rpx solid #fff;
 }
-.avatar-edit-text {
-  font-size: 20rpx;
+.edit-icon-text {
+  font-size: 24rpx;
   color: #fff;
+  line-height: 1;
 }
 
 /* 昵称 */
