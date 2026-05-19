@@ -34,6 +34,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import api from "@/api";
+// #ifdef MP-WEIXIN
+import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
+onShareAppMessage(() => ({ title: "2026世界杯积分榜", path: "/pages/standings/index", imageUrl: "/static/logo.png" }));
+onShareTimeline(() => ({ title: "2026世界杯积分榜", imageUrl: "/static/logo.png" }));
+// #endif
 
 const standings = ref<Record<string, any[]>>({});
 

@@ -59,6 +59,11 @@
 import { ref, onMounted } from "vue";
 import { onReachBottom } from "@dcloudio/uni-app";
 import api from "@/api";
+// #ifdef MP-WEIXIN
+import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
+onShareAppMessage(() => ({ title: "CupFlow - 足球资讯", path: "/pages/news/index", imageUrl: "/static/logo.png" }));
+onShareTimeline(() => ({ title: "CupFlow - 足球资讯", imageUrl: "/static/logo.png" }));
+// #endif
 
 const newsList = ref<any[]>([]);
 const currentTag = ref("");

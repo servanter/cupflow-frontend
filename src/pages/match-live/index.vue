@@ -69,6 +69,22 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import api from "@/api";
 import { useUserStore } from "@/store/user";
+// #ifdef MP-WEIXIN
+import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
+onShareAppMessage(() => ({
+  title: matchInfo.value.home_team_name
+    ? `${matchInfo.value.home_team_name} vs ${matchInfo.value.away_team_name} 文字直播`
+    : "CupFlow - 文字直播",
+  path: `/pages/match-live/index?id=${matchId.value}`,
+  imageUrl: "/static/logo.png",
+}));
+onShareTimeline(() => ({
+  title: matchInfo.value.home_team_name
+    ? `${matchInfo.value.home_team_name} vs ${matchInfo.value.away_team_name} 文字直播`
+    : "CupFlow - 文字直播",
+  imageUrl: "/static/logo.png",
+}));
+// #endif
 
 const userStore = useUserStore();
 const matchId = ref(0);

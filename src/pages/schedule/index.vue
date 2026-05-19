@@ -115,6 +115,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import api from "@/api";
+// #ifdef MP-WEIXIN
+import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
+onShareAppMessage(() => ({ title: "2026世界杯全部赛程", path: "/pages/schedule/index", imageUrl: "/static/logo.png" }));
+onShareTimeline(() => ({ title: "2026世界杯全部赛程", imageUrl: "/static/logo.png" }));
+// #endif
 
 const allMatches = ref<any[]>([]);
 const currentStage = ref("小组赛");

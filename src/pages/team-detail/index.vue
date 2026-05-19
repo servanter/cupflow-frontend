@@ -48,6 +48,18 @@
 import { ref, onMounted } from "vue";
 import api from "@/api";
 import { useUserStore } from "@/store/user";
+// #ifdef MP-WEIXIN
+import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
+onShareAppMessage(() => ({
+  title: team.value.name ? `${team.value.name} - 2026世界杯` : "CupFlow - 球队详情",
+  path: `/pages/team-detail/index?id=${teamId.value}`,
+  imageUrl: "/static/logo.png",
+}));
+onShareTimeline(() => ({
+  title: team.value.name ? `${team.value.name} - 2026世界杯` : "CupFlow - 球队详情",
+  imageUrl: "/static/logo.png",
+}));
+// #endif
 
 const userStore = useUserStore();
 const team = ref<any>({ players: [], matches: [] });

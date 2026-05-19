@@ -39,6 +39,11 @@
 import { ref, onMounted } from "vue";
 import { onReachBottom } from "@dcloudio/uni-app";
 import api from "@/api";
+// #ifdef MP-WEIXIN
+import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
+onShareAppMessage(() => ({ title: "2026世界杯精彩回放", path: "/pages/highlights/index", imageUrl: "/static/logo.png" }));
+onShareTimeline(() => ({ title: "2026世界杯精彩回放", imageUrl: "/static/logo.png" }));
+// #endif
 
 const highlights = ref<any[]>([]);
 const currentType = ref("");
