@@ -97,10 +97,7 @@ export const useUserStore = defineStore("user", {
     updateProfile(nickname: string, avatarUrl: string) {
       this.nickname = nickname;
       this.avatarUrl = avatarUrl;
-<<<<<<< HEAD
-=======
       // 同步到 localStorage
->>>>>>> 65ff74b5f4f15cdca8033aaa83ae0567b97d5715
       const userInfo = uni.getStorageSync("user_info");
       if (userInfo) {
         const info = JSON.parse(userInfo);
