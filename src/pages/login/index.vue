@@ -125,7 +125,7 @@ const wxLoading = ref(false);
 const handleWxLogin = async () => {
   wxLoading.value = true;
   try {
-    // 第一步：获取 code
+    // 获取临时登录凭证 code
     const loginRes = await new Promise<any>((resolve, reject) => {
       uni.login({
         provider: "weixin",
@@ -134,22 +134,15 @@ const handleWxLogin = async () => {
       });
     });
 
-    // 第二步：获取用户信息（模拟器有效，真机受微信隐私限制只返回默认值）
-    const infoRes = await new Promise<any>((resolve) => {
-      uni.getUserInfo({
-        provider: "weixin",
-        success: resolve,
-        fail: () => resolve({ userInfo: {} }), // 失败也继续登录
-      });
-    });
-
-    console.log('loginRes', loginRes, infoRes);
-    await userStore.wxLogin(loginRes.code, infoRes.userInfo);
+    // 注意：wx.getUserInfo / wx.getUserProfile 已被微信废弃，
+    // 无法获取真实昵称和头像，直接用 code 登录即可。
+    // 真实昵称/头像通过「完善资料」页的 open-type="chooseAvatar" 获取。
+    const result = await userStore.wxLogin(loginRes.code);
 
     uni.showToast({ title: "登录成功", icon: "success" });
     setTimeout(() => {
       uni.navigateBack();
-    }, 1000);
+    }, 800);
   } catch (err: any) {
     uni.showToast({ title: err.message || "登录失败，请重试", icon: "none" });
   } finally {

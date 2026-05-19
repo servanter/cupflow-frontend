@@ -49,8 +49,7 @@
     <view v-else>
       <view class="user-header">
         <view class="avatar">
-          <image v-if="userStore.avatarUrl" :src="userStore.avatarUrl" class="avatar-img" mode="aspectFill" />
-          <text v-else class="avatar-text">{{ userStore.nickname.charAt(0) }}</text>
+          <text class="avatar-text">{{ userStore.nickname.charAt(0) }}</text>
         </view>
         <view class="user-info">
           <text class="nickname">{{ userStore.nickname }}</text>

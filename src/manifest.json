@@ -4,5 +4,12 @@
   "description": "世界杯赛事网站",
   "versionName": "1.0.0",
   "versionCode": "100",
-  "transformPx": false
+  "transformPx": false,
+  "mp-weixin": {
+    "appid": "wxeacde40b235f447b",
+    "setting": {
+      "urlCheck": false
+    },
+    "usingComponents": true
+  }
 }
