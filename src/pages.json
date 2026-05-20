@@ -129,6 +129,12 @@
         "navigationBarBackgroundColor": "#1a73e8",
         "navigationBarTextStyle": "white"
       }
+    },
+    {
+      "path": "pages/my-reminders/index",
+      "style": {
+        "navigationBarTitleText": "我的提醒"
+      }
     }
   ],
   "tabBar": {

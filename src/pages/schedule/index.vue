@@ -65,6 +65,12 @@
               <view class="status-tag" :class="statusClass(match.status)">
                 <text class="status-tag-text">{{ match.status }}</text>
               </view>
+              <!-- #ifdef MP-WEIXIN -->
+              <view v-if="match.status === '未开始'" class="remind-btn" :class="{ 'remind-btn--done': subscribedIds.has(match.id) }" @tap.stop="handleSubscribe(match)">
+                <text class="remind-icon">🔔</text>
+                <view v-if="subscribedIds.has(match.id)" class="remind-badge">✓</view>
+              </view>
+              <!-- #endif -->
             </view>
           </view>
         </view>
@@ -102,10 +108,16 @@
             </view>
           </view>
           <view class="match-right">
-            <view class="status-tag" :class="statusClass(match.status)">
-              <text class="status-tag-text">{{ match.status }}</text>
+              <view class="status-tag" :class="statusClass(match.status)">
+                <text class="status-tag-text">{{ match.status }}</text>
+              </view>
+              <!-- #ifdef MP-WEIXIN -->
+              <view v-if="match.status === '未开始'" class="remind-btn" :class="{ 'remind-btn--done': subscribedIds.has(match.id) }" @tap.stop="handleSubscribe(match)">
+                <text class="remind-icon">🔔</text>
+                <view v-if="subscribedIds.has(match.id)" class="remind-badge">✓</view>
+              </view>
+              <!-- #endif -->
             </view>
-          </view>
         </view>
       </view>
     </view>
@@ -115,21 +127,25 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import api from "@/api";
+import { useUserStore } from "@/store/user";
 // #ifdef MP-WEIXIN
 import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
 onShareAppMessage(() => ({ title: "2026世界杯全部赛程", path: "/pages/schedule/index", imageUrl: "/static/logo.png" }));
 onShareTimeline(() => ({ title: "2026世界杯全部赛程", imageUrl: "/static/logo.png" }));
 // #endif
 
+const userStore = useUserStore();
 const allMatches = ref<any[]>([]);
 const currentStage = ref("小组赛");
 const currentGroup = ref("全部");
+const subscribedIds = ref<Set<number>>(new Set());
 
 const stageTabs = ["小组赛", "32强赛", "16强赛", "8强赛", "半决赛", "决赛"];
 const groups = ["A组", "B组", "C组", "D组", "E组", "F组", "G组", "H组", "I组", "J组", "K组", "L组"];
 
 onMounted(() => {
   fetchAllMatches();
+  fetchSubscribedIds();
 });
 
 const fetchAllMatches = async () => {
@@ -137,6 +153,16 @@ const fetchAllMatches = async () => {
   if (res.code === 200) {
     allMatches.value = res.data || [];
   }
+};
+
+const fetchSubscribedIds = async () => {
+  if (!userStore.isLoggedIn) return;
+  try {
+    const res = await api.get("/api/subscribe", true);
+    if (res.code === 200 && res.data) {
+      subscribedIds.value = new Set(res.data.map((s: any) => s.match_id));
+    }
+  } catch (e) {}
 };
 
 // 当前展示的小组列表
@@ -185,6 +211,47 @@ const statusClass = (status: string) => {
 
 const goToLive = (matchId: number) => {
   uni.navigateTo({ url: `/pages/match-live/index?id=${matchId}` });
+};
+
+const handleSubscribe = (match: any) => {
+  // #ifdef MP-WEIXIN
+  if (subscribedIds.value.has(match.id)) {
+    uni.showToast({ title: "已设置提醒", icon: "none" });
+    return;
+  }
+  if (!userStore.isLoggedIn) {
+    uni.showToast({ title: "请先登录", icon: "none" });
+    return;
+  }
+  uni.requestSubscribeMessage({
+    tmplIds: ["UB7Pt9frMMQPUmo0VylcYPxdY9sG5N9YLuKCW3MdE1U"],
+    success: async (res: any) => {
+      if (res["UB7Pt9frMMQPUmo0VylcYPxdY9sG5N9YLuKCW3MdE1U"] === "accept") {
+        try {
+          const loginRes: any = await new Promise((resolve, reject) =>
+            uni.login({ provider: "weixin", success: resolve, fail: reject })
+          );
+          const dateOnly = (match.match_date || "").toString().slice(0, 10);
+          await api.post(
+            "/api/subscribe",
+            {
+              code: loginRes.code,
+              matchId: match.id,
+              title: `${match.home_team_name} vs ${match.away_team_name}`,
+              matchTime: `${dateOnly} ${match.match_time || "00:00"}`,
+            },
+            true
+          );
+          uni.showToast({ title: "提醒已设置", icon: "success" });
+          subscribedIds.value = new Set([...subscribedIds.value, match.id]);
+        } catch (e: any) {
+          uni.showToast({ title: e?.message || "设置失败", icon: "none" });
+        }
+      }
+    },
+    fail: () => uni.showToast({ title: "设置失败，请重试", icon: "none" }),
+  });
+  // #endif
 };
 </script>
 
@@ -353,7 +420,9 @@ const goToLive = (matchId: number) => {
   width: 90rpx;
   flex-shrink: 0;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
 }
 .status-tag {
   padding: 4rpx 12rpx;
@@ -374,6 +443,37 @@ const goToLive = (matchId: number) => {
 .tag--end {
   background: #e3f2fd;
   color: #1565c0;
+}
+.remind-btn {
+  width: 44rpx;
+  height: 44rpx;
+  background: #fff3e0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.remind-btn--done {
+  background: #e8f5e9;
+}
+.remind-icon {
+  font-size: 24rpx;
+}
+.remind-badge {
+  position: absolute;
+  top: -4rpx;
+  right: -4rpx;
+  width: 20rpx;
+  height: 20rpx;
+  background: #4caf50;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14rpx;
+  color: #fff;
+  font-weight: bold;
 }
 
 /* 淘汰赛 */

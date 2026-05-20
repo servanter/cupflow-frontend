@@ -315,6 +315,21 @@ const navigateTo = (url: string) => {
   font-size: 22rpx;
   color: #999;
 }
+.remind-btn {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  background: #fff3e0;
+  border-radius: 20rpx;
+  padding: 4rpx 14rpx;
+}
+.remind-icon {
+  font-size: 20rpx;
+}
+.remind-label {
+  font-size: 20rpx;
+  color: #e65100;
+}
 .team-scroll {
   white-space: nowrap;
 }
