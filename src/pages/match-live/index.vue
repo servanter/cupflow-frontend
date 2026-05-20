@@ -10,6 +10,12 @@
         <view class="score-center">
           <text class="score">{{ matchInfo.home_score }} - {{ matchInfo.away_score }}</text>
           <text class="status" :class="{ live: matchInfo.status === '进行中' }">{{ matchInfo.status }}</text>
+          <!-- #ifdef MP-WEIXIN -->
+          <view v-if="matchInfo.status === '未开始'" class="remind-btn" :class="{ 'remind-btn--done': isSubscribed }" @tap="handleSubscribe">
+            <text class="remind-icon">🔔</text>
+            <text class="remind-text">{{ isSubscribed ? '已提醒' : '提醒' }}</text>
+          </view>
+          <!-- #endif -->
         </view>
         <view class="team-side">
           <image :src="matchInfo.away_flag" class="team-flag" mode="aspectFit" />
@@ -92,6 +98,7 @@ const matchInfo = ref<any>({});
 const messages = ref<any[]>([]);
 const comments = ref<any[]>([]);
 const commentForm = ref({ nickname: "", content: "" });
+const isSubscribed = ref(false);
 let refreshTimer: any = null;
 
 onMounted(() => {
@@ -106,6 +113,7 @@ onMounted(() => {
   fetchMatchInfo();
   fetchLiveMessages();
   fetchComments();
+  checkSubscription();
 
   // 自动刷新（每15秒）
   refreshTimer = setInterval(() => {
@@ -121,6 +129,16 @@ onUnmounted(() => {
 const fetchMatchInfo = async () => {
   const res = await api.get(`/api/matches/${matchId.value}`);
   if (res.code === 200) matchInfo.value = res.data;
+};
+
+const checkSubscription = async () => {
+  if (!userStore.isLoggedIn) return;
+  try {
+    const res = await api.get("/api/subscribe", true);
+    if (res.code === 200 && res.data) {
+      isSubscribed.value = res.data.some((s: any) => s.match_id === matchId.value);
+    }
+  } catch (e) {}
 };
 
 const fetchLiveMessages = async () => {
@@ -166,6 +184,49 @@ const formatTime = (time: string) => {
   const d = new Date(time);
   return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`;
 };
+
+const handleSubscribe = () => {
+  // #ifdef MP-WEIXIN
+  if (isSubscribed.value) {
+    uni.showToast({ title: "已设置提醒", icon: "none" });
+    return;
+  }
+  if (!userStore.isLoggedIn) {
+    uni.showToast({ title: "请先登录", icon: "none" });
+    return;
+  }
+  uni.requestSubscribeMessage({
+    tmplIds: ["UB7Pt9frMMQPUmo0VylcYPxdY9sG5N9YLuKCW3MdE1U"],
+    success: async (res: any) => {
+      console.log("res", res);
+      if (res["UB7Pt9frMMQPUmo0VylcYPxdY9sG5N9YLuKCW3MdE1U"] === "accept") {
+        try {
+          const loginRes: any = await new Promise((resolve, reject) =>
+            uni.login({ provider: "weixin", success: resolve, fail: reject })
+          );
+          const info = matchInfo.value;
+          const dateOnly = (info.match_date || "").toString().slice(0, 10);
+          await api.post(
+            "/api/subscribe",
+            {
+              code: loginRes.code,
+              matchId: matchId.value,
+              title: `${info.home_team_name} vs ${info.away_team_name}`,
+              matchTime: `${dateOnly} ${info.match_time || "00:00"}`,
+            },
+            true
+          );
+          uni.showToast({ title: "提醒已设置", icon: "success" });
+          isSubscribed.value = true;
+        } catch (e: any) {
+          uni.showToast({ title: e?.message || "设置失败", icon: "none" });
+        }
+      }
+    },
+    fail: () => uni.showToast({ title: "设置失败，请重试", icon: "none" }),
+  });
+  // #endif
+};
 </script>
 
 <style scoped>
@@ -208,4 +269,8 @@ const formatTime = (time: string) => {
 .comment-text { font-size: 26rpx; color: #333; line-height: 1.5; }
 .comment-actions { margin-top: 8rpx; }
 .like-btn { font-size: 24rpx; color: #999; }
+.remind-btn { display: flex; align-items: center; justify-content: center; gap: 6rpx; margin-top: 12rpx; background: rgba(255,255,255,0.15); border-radius: 30rpx; padding: 8rpx 24rpx; }
+.remind-btn--done { background: rgba(76,175,80,0.25); }
+.remind-icon { font-size: 26rpx; }
+.remind-text { font-size: 22rpx; color: rgba(255,255,255,0.9); }
 </style>

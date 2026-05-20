@@ -75,6 +75,13 @@
           <text class="menu-text">关注球队</text>
           <text class="menu-arrow">〉</text>
         </view>
+        <!-- #ifdef MP-WEIXIN -->
+        <view class="menu-item" @tap="navigateTo('/pages/my-reminders/index')">
+          <text class="menu-icon">🔔</text>
+          <text class="menu-text">我的提醒</text>
+          <text class="menu-arrow">〉</text>
+        </view>
+        <!-- #endif -->
         <!-- #ifndef MP-WEIXIN -->
         <view class="menu-item" @tap="navigateTo('/pages/rank/index')">
           <text class="menu-icon">🏆</text>
