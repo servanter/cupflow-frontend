@@ -50,11 +50,13 @@
       <view class="section-title">
         <text>球迷评论 ({{ comments.length }})</text>
       </view>
+      <!-- #ifndef MP-WEIXIN -->
       <view class="comment-input">
         <input v-model="commentForm.nickname" placeholder="你的昵称" class="input-nickname" />
         <input v-model="commentForm.content" placeholder="发表评论..." class="input-content" />
         <view class="send-btn" @tap="submitComment">发送</view>
       </view>
+      <!-- #endif -->
       <view class="comment-list">
         <view class="comment-item" v-for="c in comments" :key="c.id">
           <view class="comment-header">
