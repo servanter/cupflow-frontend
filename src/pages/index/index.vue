@@ -1,9 +1,28 @@
 <template>
   <view class="container">
-    <!-- 顶部赛事横幅 -->
-    <view class="banner">
-      <text class="banner-title">2026 FIFA World Cup</text>
-      <text class="banner-subtitle">美国·加拿大·墨西哥</text>
+    <!-- Banner 轮播 -->
+    <swiper
+      v-if="banners.length > 0"
+      class="banner-swiper"
+      :autoplay="true"
+      :interval="4000"
+      :duration="500"
+      :circular="true"
+      indicator-dots
+      indicator-color="rgba(255,255,255,0.5)"
+      indicator-active-color="#ffffff"
+    >
+      <swiper-item v-for="item in banners" :key="item.id" @tap="onBannerTap(item)">
+        <image :src="item.image_url" class="banner-img" mode="aspectFill" />
+        <view v-if="item.title" class="banner-title-mask">
+          <text class="banner-title-text">{{ item.title }}</text>
+        </view>
+      </swiper-item>
+    </swiper>
+    <!-- 无 banner 时的兜底静态背景 -->
+    <view v-else class="banner-fallback">
+      <text class="banner-fallback-title">2026 FIFA World Cup</text>
+      <text class="banner-fallback-sub">美国·加拿大·墨西哥</text>
     </view>
 
     <!-- 最近赛程（卡片横滑样式） -->
@@ -120,13 +139,40 @@ const userStore = useUserStore();
 const upcomingMatches = ref<any[]>([]);
 const hotTeams = ref<any[]>([]);
 const topScorers = ref<any[]>([]);
+const banners = ref<any[]>([]);
 
 onMounted(() => {
   userStore.init();
+  fetchBanners();
   fetchUpcomingMatches();
   fetchHotTeams();
   fetchTopScorers();
 });
+
+const fetchBanners = async () => {
+  const res = await api.get("/api/banners");
+  if (res.code === 200) banners.value = res.data || [];
+};
+
+const onBannerTap = (item: any) => {
+  // #ifdef MP-WEIXIN
+  const url = item.link_url_mp;
+  if (!url) return;
+  const tabPaths = ["/pages/index/index", "/pages/news/index", "/pages/highlights/index", "/pages/user/index"];
+  tabPaths.includes(url) ? uni.switchTab({ url }) : uni.navigateTo({ url });
+  // #endif
+
+  // #ifdef H5
+  const h5url = item.link_url_h5;
+  if (!h5url) return;
+  if (h5url.startsWith("http")) {
+    window.open(h5url, "_blank");
+  } else {
+    const tabPaths = ["/pages/index/index", "/pages/news/index", "/pages/highlights/index", "/pages/user/index"];
+    tabPaths.includes(h5url) ? uni.switchTab({ url: h5url }) : uni.navigateTo({ url: h5url });
+  }
+  // #endif
+};
 
 const fetchUpcomingMatches = async () => {
   const res = await api.get("/api/matches/today");
@@ -194,22 +240,47 @@ const navigateTo = (url: string) => {
 .container {
   padding-bottom: 30rpx;
 }
-.banner {
-  background: linear-gradient(135deg, #1a73e8, #0d47a1);
-  padding: 60rpx 30rpx;
-  text-align: center;
-  color: #fff;
+/* Banner 轮播 */
+.banner-swiper {
+  width: 100%;
+  height: 360rpx;
 }
-.banner-title {
-  font-size: 44rpx;
-  font-weight: bold;
+.banner-img {
+  width: 100%;
+  height: 360rpx;
   display: block;
 }
-.banner-subtitle {
+.banner-title-mask {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 24rpx;
+  background: linear-gradient(to top, rgba(0,0,0,0.55), transparent);
+}
+.banner-title-text {
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: bold;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+.banner-fallback {
+  background: linear-gradient(135deg, #1a73e8, #0d47a1);
+  height: 360rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+.banner-fallback-title {
+  font-size: 44rpx;
+  font-weight: bold;
+}
+.banner-fallback-sub {
   font-size: 26rpx;
   opacity: 0.8;
   margin-top: 10rpx;
-  display: block;
 }
 .section {
   margin: 20rpx;
