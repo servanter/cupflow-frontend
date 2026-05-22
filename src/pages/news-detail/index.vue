@@ -14,7 +14,7 @@
           allowfullscreen="true"
         ></iframe>
         <!-- #endif -->
-        <!-- 非H5: 显示封面+跳转提示 -->
+        <!-- 非H5: 点击跳转视频播放页 -->
         <!-- #ifndef H5 -->
         <view class="video-fallback" @tap="openVideo">
           <image v-if="detail.cover_url" :src="detail.cover_url" class="video-poster" mode="aspectFill" />
@@ -119,14 +119,18 @@ const formatDate = (date: string) => {
 };
 
 const openVideo = () => {
-  if (detail.value.video_url) {
-    // #ifndef H5
-    uni.setClipboardData({
-      data: detail.value.video_url,
-      success: () => uni.showToast({ title: "链接已复制，请在浏览器打开", icon: "none" }),
-    });
-    // #endif
+  if (!detail.value.video_url) return;
+  // #ifndef H5
+  // 将 B站普通链接转为嵌入播放器地址
+  let playUrl = detail.value.video_url;
+  const bvMatch = playUrl.match(/bilibili\.com\/video\/(BV[\w]+)/);
+  if (bvMatch) {
+    playUrl = `https://player.bilibili.com/player.html?bvid=${bvMatch[1]}&high_quality=1&autoplay=1`;
   }
+  uni.navigateTo({
+    url: `/pages/video-player/index?url=${encodeURIComponent(playUrl)}`,
+  });
+  // #endif
 };
 </script>
 

@@ -13,7 +13,10 @@
     <view class="list">
       <view class="highlight-card" v-for="item in highlights" :key="item.id" @tap="goDetail(item.id)">
         <view class="card-header">
-          <text class="card-type">{{ getTypeIcon(item.type) }} {{ item.type }}</text>
+          <view class="card-type" :class="typeClass(item.type)">
+            <text class="type-icon">{{ getTypeIcon(item.type) }}</text>
+            <text class="type-label">{{ item.type }}</text>
+          </view>
           <text class="card-time">{{ item.occur_time }}</text>
         </view>
         <text class="card-title">{{ item.title }}</text>
@@ -98,6 +101,11 @@ const getTypeIcon = (type: string) => {
   return icons[type] || "🏟️";
 };
 
+const typeClass = (type: string) => {
+  const map: Record<string, string> = { "进球": "type-goal", "扑救": "type-save", "红牌": "type-red", "点球": "type-penalty" };
+  return map[type] || "type-default";
+};
+
 const formatDate = (date: string) => {
   if (!date) return "";
   return date.split("T")[0];
@@ -112,7 +120,14 @@ const formatDate = (date: string) => {
 .list { padding: 20rpx; }
 .highlight-card { background: #fff; border-radius: 12rpx; padding: 24rpx; margin-bottom: 16rpx; }
 .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10rpx; }
-.card-type { font-size: 24rpx; color: #1a73e8; font-weight: bold; }
+.card-type { display: flex; align-items: center; gap: 10rpx; padding: 6rpx 18rpx; border-radius: 20rpx; background: #e8f0fe; }
+.type-icon { font-size: 30rpx; line-height: 1; }
+.type-label { font-size: 24rpx; color: #1a73e8; font-weight: bold; }
+.type-goal { background: #e8f5e9; } .type-goal .type-label { color: #2e7d32; }
+.type-save { background: #e3f2fd; } .type-save .type-label { color: #1565c0; }
+.type-red  { background: #ffebee; } .type-red  .type-label { color: #c62828; }
+.type-penalty { background: #fff8e1; } .type-penalty .type-label { color: #f57f17; }
+.type-default { background: #f3e5f5; } .type-default .type-label { color: #7b1fa2; }
 .card-time { font-size: 22rpx; color: #999; }
 .card-title { font-size: 30rpx; color: #333; font-weight: bold; display: block; margin-bottom: 10rpx; }
 .card-match { display: flex; justify-content: space-between; font-size: 24rpx; color: #666; }

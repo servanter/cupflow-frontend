@@ -135,6 +135,14 @@
       "style": {
         "navigationBarTitleText": "我的提醒"
       }
+    },
+    {
+      "path": "pages/video-player/index",
+      "style": {
+        "navigationBarTitleText": "视频播放",
+        "navigationBarBackgroundColor": "#000000",
+        "navigationBarTextStyle": "white"
+      }
     }
   ],
   "tabBar": {
