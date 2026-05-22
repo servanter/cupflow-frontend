@@ -75,13 +75,6 @@
           <text class="menu-text">关注球队</text>
           <text class="menu-arrow">〉</text>
         </view>
-        <!-- #ifdef MP-WEIXIN -->
-        <view class="menu-item" @tap="navigateTo('/pages/my-reminders/index')">
-          <text class="menu-icon">🔔</text>
-          <text class="menu-text">我的提醒</text>
-          <text class="menu-arrow">〉</text>
-        </view>
-        <!-- #endif -->
         <!-- #ifndef MP-WEIXIN -->
         <view class="menu-item" @tap="navigateTo('/pages/rank/index')">
           <text class="menu-icon">🏆</text>
@@ -94,11 +87,11 @@
       <!-- 我的关注 -->
       <view class="section">
         <view class="section-header">
-          <text class="section-title">我的关注</text>
-          <text class="section-action" v-if="profile.follows?.length > 0" @tap="navigateTo('/pages/teams/index')">
-            去关注 〉
-          </text>
-          <text class="section-action" v-else @tap="navigateTo('/pages/teams/index')">去关注 〉</text>
+          <view class="section-title-wrap">
+            <text class="section-icon">⭐</text>
+            <text class="section-title">我的关注</text>
+          </view>
+          <text class="section-action" @tap="navigateTo('/pages/teams/index')">去关注 〉</text>
         </view>
         <view class="follow-list" v-if="profile.follows?.length > 0">
           <view class="follow-item" v-for="f in previewFollows" :key="f.id" @tap="goTeam(f.team_id)">
@@ -106,7 +99,7 @@
             <text class="follow-name">{{ f.name }}</text>
             <text class="unfollow-btn" @tap.stop="unfollow(f.team_id)">取消关注</text>
           </view>
-          <view class="more-btn" v-if="profile.follows.length > 2" @tap="navigateTo('/pages/my-follows/index')">
+          <view class="more-btn" v-if="profile.follows.length > 3" @tap="navigateTo('/pages/my-follows/index')">
             <text class="more-text">查看全部关注 ({{ profile.follows.length }})</text>
             <text class="more-arrow">〉</text>
           </view>
@@ -116,6 +109,38 @@
           <text class="empty-tip">前往球队详情页点击「关注」按钮即可</text>
         </view>
       </view>
+
+      <!-- #ifdef MP-WEIXIN -->
+      <!-- 我的提醒 -->
+      <view class="section">
+        <view class="section-header">
+          <view class="section-title-wrap">
+            <text class="section-icon">🔔</text>
+            <text class="section-title">我的提醒</text>
+          </view>
+          <text class="section-action" @tap="navigateTo('/pages/schedule/index')">去设置 〉</text>
+        </view>
+        <view class="reminder-preview-list" v-if="reminders.length > 0">
+          <view class="reminder-preview-item" v-for="r in previewReminders" :key="r.id" @tap="goToMatch(r.match_id)">
+            <view class="reminder-preview-left">
+              <text class="reminder-preview-teams">{{ r.home_team_name }} vs {{ r.away_team_name }}</text>
+              <text class="reminder-preview-time">{{ formatReminderTime(r.match_time) }}</text>
+            </view>
+            <view class="reminder-preview-badge" :class="reminderBadgeClass(r.status)">
+              <text class="reminder-preview-status">{{ reminderStatusLabel(r.status) }}</text>
+            </view>
+          </view>
+          <view class="more-btn" v-if="reminders.length > 3" @tap="navigateTo('/pages/my-reminders/index')">
+            <text class="more-text">查看全部提醒 ({{ reminders.length }})</text>
+            <text class="more-arrow">〉</text>
+          </view>
+        </view>
+        <view v-else class="empty-block">
+          <text class="empty-text">暂无比赛提醒</text>
+          <text class="empty-tip">在赛程页设置提醒，开赛前推送通知</text>
+        </view>
+      </view>
+      <!-- #endif -->
 
       <!-- #ifndef MP-WEIXIN -->
       <!-- 竞猜记录 -->
@@ -167,6 +192,7 @@ const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string || "http://localho
 
 const userStore = useUserStore();
 const profile = ref<any>({});
+const reminders = ref<any[]>([]);
 
 // 头像完整 URL
 const displayAvatarUrl = computed(() => {
@@ -176,15 +202,17 @@ const displayAvatarUrl = computed(() => {
   return BASE_URL + url;
 });
 
-// 只显示前2条预览
-const previewFollows = computed(() => (profile.value.follows || []).slice(0, 2));
+// 只显示前3条预览
+const previewFollows = computed(() => (profile.value.follows || []).slice(0, 3));
 const previewGuesses = computed(() => (profile.value.guesses || []).slice(0, 2));
+const previewReminders = computed(() => reminders.value.slice(0, 3));
 
 // 使用 onShow 代替 onMounted，tabBar切换时也能刷新数据
 onShow(() => {
   userStore.init();
   if (userStore.isLoggedIn) {
     fetchProfile();
+    fetchReminders();
   }
 });
 
@@ -197,6 +225,13 @@ const fetchProfile = async () => {
       userStore.updateProfile(res.data.nickname || userStore.nickname, res.data.avatar_url);
     }
   }
+};
+
+const fetchReminders = async () => {
+  try {
+    const res = await api.get("/api/subscribe", true);
+    if (res.code === 200) reminders.value = res.data || [];
+  } catch {}
 };
 
 const goLogin = () => {
@@ -237,6 +272,28 @@ const formatDate = (time: string) => {
   if (!time) return "";
   const d = new Date(time);
   return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`;
+};
+
+const formatReminderTime = (timeStr: string) => {
+  if (!timeStr) return "";
+  const d = new Date(timeStr);
+  return `${d.getMonth() + 1}月${d.getDate()}日 ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+};
+
+const reminderStatusLabel = (status: string) => {
+  const map: Record<string, string> = { pending: "待发送", sent: "已推送", failed: "发送失败" };
+  return map[status] || status;
+};
+
+const reminderBadgeClass = (status: string) => {
+  if (status === "sent") return "badge-sent";
+  if (status === "failed") return "badge-failed";
+  return "badge-pending";
+};
+
+const goToMatch = (matchId: number | null) => {
+  if (!matchId) return;
+  uni.navigateTo({ url: `/pages/match-live/index?id=${matchId}` });
 };
 </script>
 
@@ -373,6 +430,8 @@ const formatDate = (time: string) => {
 .menu-arrow { font-size: 26rpx; color: #ccc; }
 .section { margin: 20rpx; background: #fff; border-radius: 12rpx; padding: 24rpx; }
 .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16rpx; }
+.section-title-wrap { display: flex; align-items: center; gap: 16rpx; }
+.section-icon { font-size: 32rpx; }
 .section-title { font-size: 30rpx; font-weight: bold; color: #333; }
 .section-action { font-size: 24rpx; color: #1a73e8; }
 .section-count { font-size: 22rpx; color: #999; }
@@ -396,8 +455,27 @@ const formatDate = (time: string) => {
 .empty-block { padding: 20rpx 0; text-align: center; }
 .empty-text { font-size: 26rpx; color: #999; display: block; }
 .empty-tip { font-size: 22rpx; color: #ccc; display: block; margin-top: 8rpx; }
-.more-btn { display: flex; align-items: center; justify-content: center; padding: 20rpx 0; margin-top: 8rpx; border-top: 1rpx solid #f0f0f0; }
+.more-btn { display: flex; align-items: center; justify-content: center; padding: 20rpx 0; margin-top: 8rpx; }
 .more-text { font-size: 26rpx; color: #1a73e8; }
 .more-arrow { font-size: 24rpx; color: #1a73e8; margin-left: 6rpx; }
 .logout-btn { margin: 40rpx 20rpx; text-align: center; padding: 24rpx; background: #fff; border-radius: 12rpx; color: #f44336; font-size: 28rpx; }
+
+/* 提醒预览 */
+.reminder-preview-list { /* nothing */ }
+.reminder-preview-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+.reminder-preview-item:last-child { border-bottom: none; }
+.reminder-preview-left { flex: 1; margin-right: 16rpx; }
+.reminder-preview-teams { font-size: 28rpx; color: #333; font-weight: 500; display: block; margin-bottom: 6rpx; }
+.reminder-preview-time { font-size: 22rpx; color: #999; display: block; }
+.reminder-preview-badge { padding: 6rpx 16rpx; border-radius: 20rpx; flex-shrink: 0; }
+.reminder-preview-status { font-size: 22rpx; }
+.badge-pending { background: #fff3e0; color: #e65100; }
+.badge-sent { background: #e8f5e9; color: #2e7d32; }
+.badge-failed { background: #ffebee; color: #c62828; }
 </style>

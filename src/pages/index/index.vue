@@ -355,8 +355,8 @@ const navigateTo = (url: string) => {
   width: 150rpx;
 }
 .team-flag {
-  width: 60rpx;
-  height: 40rpx;
+  width: 80rpx;
+  height: 54rpx;
   margin-bottom: 8rpx;
 }
 .team-name {
