@@ -136,6 +136,7 @@
         "navigationBarTitleText": "我的提醒"
       }
     },
+    // #ifdef H5
     {
       "path": "pages/video-player/index",
       "style": {
@@ -144,6 +145,7 @@
         "navigationBarTextStyle": "white"
       }
     }
+    // #endif
   ],
   "tabBar": {
     "color": "#999999",

@@ -37,10 +37,12 @@
             mode="aspectFill"
           />
         </view>
+        <!-- #ifndef MP-WEIXIN -->
         <view v-if="item.video_url" class="card-video-badge">
           <text class="video-icon">▶</text>
           <text class="video-text">有视频</text>
         </view>
+        <!-- #endif -->
       </view>
       <view v-if="newsList.length === 0 && !loading" class="empty">
         <text>暂无资讯</text>
