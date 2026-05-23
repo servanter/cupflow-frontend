@@ -1,10 +1,9 @@
 <template>
   <view class="container">
     <view class="detail-card" v-if="detail.id">
-      <!-- 视频播放器（有视频时显示在最顶部） -->
+      <!-- 视频播放器（H5 端有视频时显示在最顶部） -->
+      <!-- #ifdef H5 -->
       <view class="video-section" v-if="detail.video_url">
-        <!-- H5: 使用iframe嵌入B站播放器 -->
-        <!-- #ifdef H5 -->
         <iframe
           v-if="embedUrl"
           :src="embedUrl"
@@ -13,28 +12,26 @@
           frameborder="0"
           allowfullscreen="true"
         ></iframe>
-        <!-- #endif -->
-        <!-- 非H5: 点击跳转视频播放页 -->
-        <!-- #ifndef H5 -->
-        <view class="video-fallback" @tap="openVideo">
-          <image v-if="detail.cover_url" :src="detail.cover_url" class="video-poster" mode="aspectFill" />
-          <view class="play-overlay">
-            <view class="play-btn">
-              <text class="play-icon">▶</text>
-            </view>
-            <text class="play-tip">点击播放视频</text>
-          </view>
-        </view>
-        <!-- #endif -->
       </view>
+      <!-- #endif -->
 
-      <!-- 没视频时显示封面图 -->
+      <!-- 封面图：小程序端始终显示封面；H5 端无视频时显示 -->
+      <!-- #ifdef MP-WEIXIN -->
+      <image
+        v-if="detail.cover_url"
+        :src="detail.cover_url"
+        class="cover-image"
+        mode="aspectFill"
+      />
+      <!-- #endif -->
+      <!-- #ifndef MP-WEIXIN -->
       <image
         v-if="!detail.video_url && detail.cover_url"
         :src="detail.cover_url"
         class="cover-image"
         mode="aspectFill"
       />
+      <!-- #endif -->
 
       <!-- 标签 + 日期 -->
       <view class="meta">
@@ -50,10 +47,26 @@
         <text class="summary-text">{{ detail.summary }}</text>
       </view>
 
-      <!-- 正文 -->
+      <!-- 正文（图文混排） -->
+      <!-- #ifdef MP-WEIXIN -->
+      <view class="content-box" v-if="detail.content">
+        <block v-for="(seg, index) in contentSegments" :key="index">
+          <image
+            v-if="seg.type === 'image'"
+            :src="seg.content"
+            class="content-img"
+            mode="widthFix"
+            show-menu-by-longpress
+          />
+          <text v-else class="content-text">{{ seg.content }}</text>
+        </block>
+      </view>
+      <!-- #endif -->
+      <!-- #ifndef MP-WEIXIN -->
       <view class="content-box" v-if="detail.content">
         <text class="content-text">{{ detail.content }}</text>
       </view>
+      <!-- #endif -->
     </view>
   </view>
 </template>
@@ -64,6 +77,32 @@ import api from "@/api";
 
 const detail = ref<any>({});
 const newsId = ref(0);
+
+// 正文图文混排解析：[img]url[/img]
+const contentSegments = computed(() => {
+  const raw = detail.value.content || "";
+  const parts: { type: "text" | "image"; content: string }[] = [];
+  const regex = /\[img\]([\s\S]*?)\[\/img\]/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(raw)) !== null) {
+    if (match.index > lastIndex) {
+      const textBlock = raw.slice(lastIndex, match.index);
+      textBlock.split(/\n+/).filter((p: string) => p.trim()).forEach((p: string) => {
+        parts.push({ type: "text", content: p.trim() });
+      });
+    }
+    parts.push({ type: "image", content: match[1].trim() });
+    lastIndex = regex.lastIndex;
+  }
+  if (lastIndex < raw.length) {
+    const tail = raw.slice(lastIndex);
+    tail.split(/\n+/).filter((p: string) => p.trim()).forEach((p: string) => {
+      parts.push({ type: "text", content: p.trim() });
+    });
+  }
+  return parts;
+});
 
 // #ifdef MP-WEIXIN
 import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
@@ -118,20 +157,6 @@ const formatDate = (date: string) => {
   return date.split("T")[0];
 };
 
-const openVideo = () => {
-  if (!detail.value.video_url) return;
-  // #ifndef H5
-  // 将 B站普通链接转为嵌入播放器地址
-  let playUrl = detail.value.video_url;
-  const bvMatch = playUrl.match(/bilibili\.com\/video\/(BV[\w]+)/);
-  if (bvMatch) {
-    playUrl = `https://player.bilibili.com/player.html?bvid=${bvMatch[1]}&high_quality=1&autoplay=1`;
-  }
-  uni.navigateTo({
-    url: `/pages/video-player/index?url=${encodeURIComponent(playUrl)}`,
-  });
-  // #endif
-};
 </script>
 
 <style scoped>
@@ -144,57 +169,6 @@ const openVideo = () => {
   background: #fff;
   border-radius: 16rpx;
   overflow: hidden;
-}
-
-/* 视频播放器 */
-.video-section {
-  width: 100%;
-  background: #000;
-}
-.video-player {
-  width: 100%;
-  height: 420rpx;
-  display: block;
-}
-.video-fallback {
-  position: relative;
-  width: 100%;
-  height: 420rpx;
-}
-.video-poster {
-  width: 100%;
-  height: 420rpx;
-}
-.play-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.35);
-}
-.play-btn {
-  width: 100rpx;
-  height: 100rpx;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16rpx;
-}
-.play-icon {
-  font-size: 44rpx;
-  color: #1a73e8;
-  margin-left: 8rpx;
-}
-.play-tip {
-  font-size: 24rpx;
-  color: #fff;
 }
 
 .cover-image {
@@ -249,5 +223,13 @@ const openVideo = () => {
   font-size: 28rpx;
   color: #333;
   line-height: 1.8;
+  display: block;
+  margin-bottom: 16rpx;
+}
+.content-img {
+  width: 100%;
+  border-radius: 10rpx;
+  display: block;
+  margin: 10rpx 0 20rpx;
 }
 </style>
