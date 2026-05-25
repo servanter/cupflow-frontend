@@ -38,10 +38,42 @@
             </view>
           </view>
         </view>
+
+        <!-- #ifdef MP-WEIXIN -->
+        <!-- 微信端：直接在此页内嵌授权登录，无需跳转 -->
+        <view class="wx-privacy-check">
+          <view class="privacy-row" @tap="togglePrivacy">
+            <view class="privacy-checkbox" :class="{ checked: privacyAgreed }">
+              <text v-if="privacyAgreed" class="checkbox-tick">✓</text>
+            </view>
+            <view class="privacy-texts">
+              <text class="privacy-text-plain">我已阅读并同意</text>
+              <text class="privacy-link" @tap.stop="openAgreement">《用户服务协议》</text>
+              <text class="privacy-text-plain">及</text>
+              <text class="privacy-link" @tap.stop="openPrivacy">《隐私政策》</text>
+            </view>
+          </view>
+        </view>
+        <button
+          class="wx-login-btn"
+          :class="{ 'wx-login-btn-disabled': !privacyAgreed }"
+          @tap="handleWxLogin"
+          :loading="wxLoading"
+          :disabled="wxLoading"
+        >
+          <view class="wx-btn-inner">
+            <text class="wx-btn-icon">💬</text>
+            <text class="wx-btn-text">{{ wxLoading ? '登录中...' : '微信授权登录' }}</text>
+          </view>
+        </button>
+        <!-- #endif -->
+
+        <!-- #ifndef MP-WEIXIN -->
         <view class="login-btn-wrap" @tap="goLogin">
           <text class="login-btn-text">登录 / 注册</text>
         </view>
         <text class="login-hint">登录即可体验全部功能</text>
+        <!-- #endif -->
       </view>
     </view>
 
@@ -239,6 +271,44 @@ const goLogin = () => {
   uni.navigateTo({ url: "/pages/login/index" });
 };
 
+// #ifdef MP-WEIXIN
+const wxLoading = ref(false);
+const privacyAgreed = ref(false);
+
+const togglePrivacy = () => { privacyAgreed.value = !privacyAgreed.value; };
+
+const openAgreement = () => {
+  uni.showModal({ title: '用户服务协议', content: '欢迎使用 CupFlow 世界杯赛事互动平台。使用本平台即表示您同意遵守相关服务条款，包括但不限于合理使用平台功能、不传播违法内容等。', showCancel: false, confirmText: '我知道了' });
+};
+const openPrivacy = () => {
+  uni.showModal({ title: '隐私政策', content: '我们非常重视您的隐私保护。本平台仅收集必要的用户信息（如微信 openid）用于提供服务，不会将您的个人信息出售给第三方。', showCancel: false, confirmText: '我知道了' });
+};
+
+const handleWxLogin = async () => {
+  if (!privacyAgreed.value) {
+    uni.showToast({ title: '请先阅读并同意用户协议及隐私政策', icon: 'none', duration: 2000 });
+    return;
+  }
+  wxLoading.value = true;
+  try {
+    const loginRes = await new Promise<any>((resolve, reject) => {
+      uni.login({ provider: 'weixin', success: resolve, fail: reject });
+    });
+    await userStore.wxLogin(loginRes.code);
+    uni.showToast({ title: '登录成功', icon: 'success' });
+    setTimeout(() => {
+      fetchProfile();
+      fetchReminders();
+    }, 500);
+  } catch (err: any) {
+    uni.showToast({ title: err.message || '登录失败，请重试', icon: 'none' });
+  } finally {
+    wxLoading.value = false;
+  }
+};
+// #endif
+
+
 const goEditProfile = () => {
   uni.navigateTo({ url: "/pages/edit-profile/index" });
 };
@@ -411,6 +481,77 @@ const goToMatch = (matchId: number | null) => {
   font-size: 22rpx;
   color: #bbb;
 }
+
+/* 微信端内嵌登录样式 */
+.wx-privacy-check {
+  width: 100%;
+  margin: 40rpx 0 24rpx;
+}
+.privacy-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+}
+.privacy-checkbox {
+  width: 36rpx;
+  height: 36rpx;
+  border: 2rpx solid #ccc;
+  border-radius: 6rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2rpx;
+}
+.privacy-checkbox.checked {
+  background: #1a73e8;
+  border-color: #1a73e8;
+}
+.checkbox-tick {
+  color: #fff;
+  font-size: 24rpx;
+  font-weight: bold;
+}
+.privacy-texts {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  line-height: 1.6;
+}
+.privacy-text-plain { font-size: 24rpx; color: #666; }
+.privacy-link { font-size: 24rpx; color: #1a73e8; }
+.wx-login-btn {
+  width: 100%;
+  height: 96rpx;
+  background: linear-gradient(135deg, #07c160, #06ad56) !important;
+  border-radius: 48rpx !important;
+  border: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(7, 193, 96, 0.35);
+  padding: 0 !important;
+}
+.wx-login-btn-disabled {
+  background: linear-gradient(135deg, #a0d4b5, #9ecfb0) !important;
+  box-shadow: none !important;
+}
+.wx-login-btn::after { border: none !important; }
+.wx-btn-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+}
+.wx-btn-icon { font-size: 36rpx; }
+.wx-btn-text {
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: bold;
+  letter-spacing: 4rpx;
+}
+
 .user-header { background: linear-gradient(135deg, #1a73e8, #0d47a1); padding: 50rpx 40rpx; display: flex; align-items: center; gap: 24rpx; }
 .avatar { width: 110rpx; height: 110rpx; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 44rpx; color: #fff; font-weight: bold; overflow: hidden; }
 .avatar-img { width: 110rpx; height: 110rpx; border-radius: 50%; }

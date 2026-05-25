@@ -86,6 +86,11 @@
             <text class="wx-btn-text">{{ wxLoading ? '登录中...' : '微信授权登录' }}</text>
           </view>
         </button>
+
+        <!-- 取消按钮：审核要求必须提供可拒绝/返回的选项 -->
+        <view class="cancel-btn" @tap="handleCancel">
+          <text class="cancel-btn-text">暂不登录</text>
+        </view>
       </view>
       <!-- #endif -->
 
@@ -154,6 +159,13 @@ const openPrivacy = () => {
     showCancel: false,
     confirmText: '我知道了'
   });
+};
+
+const handleCancel = () => {
+  uni.navigateBack({ delta: 1, fail: () => {
+    // 如果没有上一页（比如直接进入），跳回首页
+    uni.switchTab({ url: "/pages/index/index" });
+  }});
 };
 
 const handleWxLogin = async () => {
@@ -435,6 +447,14 @@ const handleWxLogin = async () => {
 }
 .wx-login-btn::after {
   border: none !important;
+}
+.cancel-btn {
+  margin-top: 32rpx;
+  padding: 20rpx 60rpx;
+}
+.cancel-btn-text {
+  font-size: 26rpx;
+  color: #999;
 }
 .wx-btn-inner {
   display: flex;
