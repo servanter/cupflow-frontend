@@ -42,6 +42,7 @@
 import { ref } from "vue";
 import { onShow } from "@dcloudio/uni-app";
 import api from "@/api";
+import { goPage } from "@/utils/navigate";
 
 const loading = ref(true);
 const reminders = ref<any[]>([]);
@@ -95,7 +96,7 @@ const goToMatch = (matchId: number | null) => {
 };
 
 const goSchedule = () => {
-  uni.navigateTo({ url: "/pages/schedule/index" });
+  goPage("/pages/schedule/index");
 };
 </script>
 

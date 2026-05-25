@@ -120,6 +120,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import { goPage } from "@/utils/navigate";
 // #ifdef MP-WEIXIN
 import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
 onShareAppMessage(() => ({
@@ -158,8 +159,7 @@ const onBannerTap = (item: any) => {
   // #ifdef MP-WEIXIN
   const url = item.link_url_mp;
   if (!url) return;
-  const tabPaths = ["/pages/index/index", "/pages/news/index", "/pages/highlights/index", "/pages/user/index"];
-  tabPaths.includes(url) ? uni.switchTab({ url }) : uni.navigateTo({ url });
+  goPage(url);
   // #endif
 
   // #ifdef H5
@@ -168,8 +168,7 @@ const onBannerTap = (item: any) => {
   if (h5url.startsWith("http")) {
     window.open(h5url, "_blank");
   } else {
-    const tabPaths = ["/pages/index/index", "/pages/news/index", "/pages/highlights/index", "/pages/user/index"];
-    tabPaths.includes(h5url) ? uni.switchTab({ url: h5url }) : uni.navigateTo({ url: h5url });
+    goPage(h5url);
   }
   // #endif
 };
@@ -212,11 +211,11 @@ const goToLive = (matchId: number) => {
 };
 
 const goToMatches = () => {
-  uni.navigateTo({ url: "/pages/schedule/index" });
+  goPage("/pages/schedule/index");
 };
 
 const goToAllTeams = () => {
-  uni.navigateTo({ url: "/pages/teams/index" });
+  goPage("/pages/teams/index");
 };
 
 const goToTeamDetail = (id: number) => {
@@ -228,11 +227,7 @@ const goToPlayer = (playerId: number) => {
 };
 
 const navigateTo = (url: string) => {
-  if (url.includes("guess") || url.includes("news") || url.includes("highlights")) {
-    uni.switchTab({ url });
-  } else {
-    uni.navigateTo({ url });
-  }
+  goPage(url);
 };
 </script>
 
