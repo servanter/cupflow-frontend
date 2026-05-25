@@ -58,8 +58,25 @@
           <text class="wx-desc-text">授权微信账号即可快速登录</text>
           <text class="wx-desc-sub">安全、便捷，无需注册</text>
         </view>
+
+        <!-- 隐私政策勾选框（默认不勾选，用户须主动同意） -->
+        <view class="wx-privacy-check">
+          <view class="privacy-row" @tap="togglePrivacy">
+            <view class="privacy-checkbox" :class="{ checked: privacyAgreed }">
+              <text v-if="privacyAgreed" class="checkbox-tick">✓</text>
+            </view>
+            <view class="privacy-texts">
+              <text class="privacy-text-plain">我已阅读并同意</text>
+              <text class="privacy-link" @tap.stop="openAgreement">《用户服务协议》</text>
+              <text class="privacy-text-plain">及</text>
+              <text class="privacy-link" @tap.stop="openPrivacy">《隐私政策》</text>
+            </view>
+          </view>
+        </view>
+
         <button
           class="wx-login-btn"
+          :class="{ 'wx-login-btn-disabled': !privacyAgreed }"
           @tap="handleWxLogin"
           :loading="wxLoading"
           :disabled="wxLoading"
@@ -69,12 +86,6 @@
             <text class="wx-btn-text">{{ wxLoading ? '登录中...' : '微信授权登录' }}</text>
           </view>
         </button>
-        <view class="wx-privacy-tip">
-          <text class="wx-privacy-text">登录即表示同意</text>
-          <text class="wx-privacy-link">《用户协议》</text>
-          <text class="wx-privacy-text">与</text>
-          <text class="wx-privacy-link">《隐私政策》</text>
-        </view>
       </view>
       <!-- #endif -->
 
@@ -121,8 +132,35 @@ const handleSubmit = async () => {
 
 // #ifdef MP-WEIXIN
 const wxLoading = ref(false);
+const privacyAgreed = ref(false);
+
+const togglePrivacy = () => {
+  privacyAgreed.value = !privacyAgreed.value;
+};
+
+const openAgreement = () => {
+  uni.showModal({
+    title: '用户服务协议',
+    content: '欢迎使用 CupFlow 世界杯赛事互动平台。使用本平台即表示您同意遵守相关服务条款，包括但不限于合理使用平台功能、不传播违法内容等。',
+    showCancel: false,
+    confirmText: '我知道了'
+  });
+};
+
+const openPrivacy = () => {
+  uni.showModal({
+    title: '隐私政策',
+    content: '我们非常重视您的隐私保护。本平台仅收集必要的用户信息（如微信 openid）用于提供服务，不会将您的个人信息出售给第三方。',
+    showCancel: false,
+    confirmText: '我知道了'
+  });
+};
 
 const handleWxLogin = async () => {
+  if (!privacyAgreed.value) {
+    uni.showToast({ title: '请先阅读并同意用户协议及隐私政策', icon: 'none', duration: 2000 });
+    return;
+  }
   wxLoading.value = true;
   try {
     // 获取临时登录凭证 code
@@ -318,7 +356,7 @@ const handleWxLogin = async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 50rpx;
+  margin-bottom: 40rpx;
 }
 .wx-desc-text {
   font-size: 30rpx;
@@ -330,6 +368,55 @@ const handleWxLogin = async () => {
   color: #999;
   margin-top: 12rpx;
 }
+
+/* 隐私政策勾选区域 */
+.wx-privacy-check {
+  width: 100%;
+  margin-bottom: 32rpx;
+}
+.privacy-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+}
+.privacy-checkbox {
+  width: 36rpx;
+  height: 36rpx;
+  border: 2rpx solid #ccc;
+  border-radius: 6rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2rpx;
+  transition: all 0.2s;
+}
+.privacy-checkbox.checked {
+  background: #1a73e8;
+  border-color: #1a73e8;
+}
+.checkbox-tick {
+  color: #fff;
+  font-size: 24rpx;
+  font-weight: bold;
+  line-height: 1;
+}
+.privacy-texts {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  line-height: 1.6;
+}
+.privacy-text-plain {
+  font-size: 24rpx;
+  color: #666;
+}
+.privacy-link {
+  font-size: 24rpx;
+  color: #1a73e8;
+}
+
 .wx-login-btn {
   width: 100%;
   height: 96rpx;
@@ -341,6 +428,10 @@ const handleWxLogin = async () => {
   justify-content: center;
   box-shadow: 0 8rpx 24rpx rgba(7, 193, 96, 0.35);
   padding: 0 !important;
+}
+.wx-login-btn-disabled {
+  background: linear-gradient(135deg, #a0d4b5, #9ecfb0) !important;
+  box-shadow: none !important;
 }
 .wx-login-btn::after {
   border: none !important;
@@ -359,18 +450,5 @@ const handleWxLogin = async () => {
   font-size: 32rpx;
   font-weight: bold;
   letter-spacing: 4rpx;
-}
-.wx-privacy-tip {
-  display: flex;
-  align-items: center;
-  margin-top: 40rpx;
-}
-.wx-privacy-text {
-  font-size: 22rpx;
-  color: #bbb;
-}
-.wx-privacy-link {
-  font-size: 22rpx;
-  color: #1a73e8;
 }
 </style>

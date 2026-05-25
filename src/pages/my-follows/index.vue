@@ -23,6 +23,7 @@
 import { ref } from "vue";
 import { onShow } from "@dcloudio/uni-app";
 import api from "@/api";
+import { goPage } from "@/utils/navigate";
 
 const follows = ref<any[]>([]);
 
@@ -42,7 +43,7 @@ const goTeam = (teamId: number) => {
 };
 
 const goTeams = () => {
-  uni.navigateTo({ url: "/pages/teams/index" });
+  goPage("/pages/teams/index");
 };
 
 const unfollow = async (teamId: number) => {

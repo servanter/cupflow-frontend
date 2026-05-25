@@ -14,6 +14,7 @@
         "mp-weixin": { "enableShareTimeline": true }
       }
     },
+    // #ifndef MP-WEIXIN
     {
       "path": "pages/highlights/index",
       "style": {
@@ -28,6 +29,7 @@
         "mp-weixin": { "enableShareTimeline": true }
       }
     },
+    // #endif
     {
       "path": "pages/teams/index",
       "style": {
@@ -49,6 +51,7 @@
         "mp-weixin": { "enableShareTimeline": true }
       }
     },
+    // #ifndef MP-WEIXIN
     {
       "path": "pages/guess/index",
       "style": {
@@ -56,6 +59,8 @@
         "mp-weixin": { "enableShareTimeline": true }
       }
     },
+    // #endif
+    // #ifndef MP-WEIXIN
     {
       "path": "pages/rank/index",
       "style": {
@@ -63,6 +68,7 @@
         "mp-weixin": { "enableShareTimeline": true }
       }
     },
+    // #endif
     {
       "path": "pages/user/index",
       "style": {
@@ -75,6 +81,7 @@
         "navigationBarTitleText": "登录注册"
       }
     },
+    // #ifndef MP-WEIXIN
     {
       "path": "pages/standings/index",
       "style": {
@@ -82,6 +89,8 @@
         "mp-weixin": { "enableShareTimeline": true }
       }
     },
+    // #endif
+    // #ifndef MP-WEIXIN
     {
       "path": "pages/champion/index",
       "style": {
@@ -89,18 +98,21 @@
         "mp-weixin": { "enableShareTimeline": true }
       }
     },
+    // #endif
     {
       "path": "pages/my-follows/index",
       "style": {
         "navigationBarTitleText": "我的关注"
       }
     },
+    // #ifndef MP-WEIXIN
     {
       "path": "pages/my-guesses/index",
       "style": {
         "navigationBarTitleText": "竞猜记录"
       }
     },
+    // #endif
     {
       "path": "pages/schedule/index",
       "style": {
@@ -108,6 +120,7 @@
         "mp-weixin": { "enableShareTimeline": true }
       }
     },
+    // #ifndef MP-WEIXIN
     {
       "path": "pages/news/index",
       "style": {
@@ -122,6 +135,7 @@
         "mp-weixin": { "enableShareTimeline": true }
       }
     },
+    // #endif
     {
       "path": "pages/edit-profile/index",
       "style": {
@@ -136,6 +150,7 @@
         "navigationBarTitleText": "我的提醒"
       }
     },
+    // #ifndef MP-WEIXIN
     {
       "path": "pages/video-player/index",
       "style": {
@@ -144,6 +159,7 @@
         "navigationBarTextStyle": "white"
       }
     }
+    // #endif
   ],
   "tabBar": {
     "color": "#999999",
@@ -157,26 +173,42 @@
         "iconPath": "static/tab/home.png",
         "selectedIconPath": "static/tab/home-active.png"
       },
+      // #ifdef MP-WEIXIN
+      {
+        "pagePath": "pages/schedule/index",
+        "text": "赛程",
+        "iconPath": "static/tab/news.png",
+        "selectedIconPath": "static/tab/news-active.png"
+      },
+      // #endif
+      // #ifndef MP-WEIXIN
       {
         "pagePath": "pages/news/index",
         "text": "资讯",
         "iconPath": "static/tab/news.png",
         "selectedIconPath": "static/tab/news-active.png"
       },
-      // #ifndef MP-WEIXIN
       {
         "pagePath": "pages/guess/index",
         "text": "竞猜",
         "iconPath": "static/tab/guess.png",
         "selectedIconPath": "static/tab/guess-active.png"
       },
-      // #endif
       {
         "pagePath": "pages/highlights/index",
         "text": "精彩",
         "iconPath": "static/tab/highlight.png",
         "selectedIconPath": "static/tab/highlight-active.png"
       },
+      // #endif
+      // #ifdef MP-WEIXIN
+      {
+        "pagePath": "pages/teams/index",
+        "text": "球队",
+        "iconPath": "static/tab/highlight.png",
+        "selectedIconPath": "static/tab/highlight-active.png"
+      },
+      // #endif
       {
         "pagePath": "pages/user/index",
         "text": "我的",

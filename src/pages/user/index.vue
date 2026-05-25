@@ -187,6 +187,7 @@ import { ref, computed } from "vue";
 import { onShow } from "@dcloudio/uni-app";
 import api from "@/api";
 import { useUserStore } from "@/store/user";
+import { goPage } from "@/utils/navigate";
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string || "http://localhost:3000").replace(/\/$/, "");
 
@@ -247,11 +248,7 @@ const goTeam = (teamId: number) => {
 };
 
 const navigateTo = (url: string) => {
-  if (url.includes("/pages/guess/") || url.includes("/pages/highlights/")) {
-    uni.switchTab({ url });
-  } else {
-    uni.navigateTo({ url });
-  }
+  goPage(url);
 };
 
 const unfollow = async (teamId: number) => {
