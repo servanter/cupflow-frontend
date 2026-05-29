@@ -1,23 +1,20 @@
 <template>
   <view class="container">
 
-    <!-- 视频区域：有视频时展示在最顶部 -->
+    <!-- 视频区域：有视频时展示在最顶部（直接当 mp4 播放） -->
     <view class="video-section" v-if="detail.video_url">
-      <!-- H5: iframe 内嵌播放 -->
       <!-- #ifdef H5 -->
-      <iframe
-        :src="embedUrl"
+      <video
+        :src="detail.video_url"
         class="video-player"
-        frameborder="0"
-        scrolling="no"
-        allowfullscreen="true"
+        controls
+        autoplay
+        playsinline
       />
       <!-- #endif -->
 
-      <!-- 小程序: 直链 MP4 → video 组件；B站 → 封面 + 点击全屏 -->
       <!-- #ifndef H5 -->
       <video
-        v-if="isDirectVideo"
         :src="detail.video_url"
         class="video-player"
         controls
@@ -26,14 +23,6 @@
         show-center-play-btn
         enable-play-gesture
       />
-      <view v-else class="video-fallback" @tap="openVideoFullscreen">
-        <view class="play-overlay">
-          <view class="play-btn">
-            <text class="play-icon">▶</text>
-          </view>
-          <text class="play-tip">点击全屏播放</text>
-        </view>
-      </view>
       <!-- #endif -->
     </view>
 
@@ -48,8 +37,18 @@
         <text class="type">{{ detail.type }}</text>
         <text class="time">场上时间: {{ detail.occur_time }}</text>
       </view>
+      <!-- 描述：兼容图文混排 -->
       <view class="description" v-if="detail.description">
-        <text>{{ detail.description }}</text>
+        <block v-for="(seg, index) in descriptionSegments" :key="index">
+          <image
+            v-if="seg.type === 'image'"
+            :src="seg.content"
+            class="desc-img"
+            mode="widthFix"
+            show-menu-by-longpress
+          />
+          <text v-else class="desc-text">{{ seg.content }}</text>
+        </block>
       </view>
       <view class="action-bar">
         <view class="action-btn" @tap="goLive">
@@ -81,21 +80,30 @@ onShareTimeline(() => ({
 }));
 // #endif
 
-// 是否为直链视频文件（.mp4 / .m3u8 等）
-const isDirectVideo = computed(() =>
-  /\.(mp4|m3u8|flv|mov|avi)(\?.*)?$/i.test(detail.value.video_url || "")
-);
-
-// 将 B站链接转为嵌入播放器地址（H5 iframe 用）
-const embedUrl = computed(() => {
-  const url = detail.value.video_url;
-  if (!url) return "";
-  const bvMatch = url.match(/bilibili\.com\/video\/(BV[\w]+)/);
-  if (bvMatch) {
-    return `https://player.bilibili.com/player.html?bvid=${bvMatch[1]}&high_quality=1&autoplay=1`;
+// 描述内容图文混排解析（兼容 [img]xxx[/img] 标签）
+const descriptionSegments = computed(() => {
+  const raw = detail.value.description || "";
+  const parts: { type: "text" | "image"; content: string }[] = [];
+  const regex = /\[img\]([\s\S]*?)\[\/img\]/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(raw)) !== null) {
+    if (match.index > lastIndex) {
+      const textBlock = raw.slice(lastIndex, match.index);
+      textBlock.split(/\n+/).filter((p: string) => p.trim()).forEach((p: string) => {
+        parts.push({ type: "text", content: p.trim() });
+      });
+    }
+    parts.push({ type: "image", content: match[1].trim() });
+    lastIndex = regex.lastIndex;
   }
-  if (url.includes("player.bilibili.com")) return url;
-  return url;
+  if (lastIndex < raw.length) {
+    const tail = raw.slice(lastIndex);
+    tail.split(/\n+/).filter((p: string) => p.trim()).forEach((p: string) => {
+      parts.push({ type: "text", content: p.trim() });
+    });
+  }
+  return parts;
 });
 
 onMounted(() => {
@@ -108,19 +116,6 @@ onMounted(() => {
 const fetchDetail = async () => {
   const res = await api.get(`/api/highlights/${highlightId.value}`);
   if (res.code === 200) detail.value = res.data;
-};
-
-// 小程序 B站视频：跳转全屏播放页
-const openVideoFullscreen = () => {
-  if (!detail.value.video_url) return;
-  let playUrl = detail.value.video_url;
-  const bvMatch = playUrl.match(/bilibili\.com\/video\/(BV[\w]+)/);
-  if (bvMatch) {
-    playUrl = `https://player.bilibili.com/player.html?bvid=${bvMatch[1]}&high_quality=1&autoplay=1`;
-  }
-  uni.navigateTo({
-    url: `/pages/video-player/index?url=${encodeURIComponent(playUrl)}`,
-  });
 };
 
 const goLive = () => {
@@ -236,6 +231,19 @@ const formatDate = (date: string) => (date ? date.split("T")[0] : "");
   padding: 20rpx;
   background: #f8f9fa;
   border-radius: 8rpx;
+}
+.desc-text {
+  font-size: 28rpx;
+  color: #444;
+  line-height: 1.8;
+  display: block;
+  margin-bottom: 16rpx;
+}
+.desc-img {
+  width: 100%;
+  border-radius: 10rpx;
+  display: block;
+  margin: 10rpx 0 20rpx;
 }
 .action-bar {
   padding-top: 20rpx;

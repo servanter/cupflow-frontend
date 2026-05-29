@@ -1,30 +1,27 @@
 <template>
   <view class="container">
     <view class="detail-card" v-if="detail.id">
-      <!-- 视频播放器（有视频时显示在最顶部） -->
+      <!-- 视频播放器（有视频时显示在最顶部，直接当 mp4 播放） -->
       <view class="video-section" v-if="detail.video_url">
-        <!-- H5: 使用iframe嵌入B站播放器 -->
         <!-- #ifdef H5 -->
-        <iframe
-          v-if="embedUrl"
-          :src="embedUrl"
+        <video
+          :src="detail.video_url"
           class="video-player"
-          scrolling="no"
-          frameborder="0"
-          allowfullscreen="true"
-        ></iframe>
+          controls
+          playsinline
+        />
         <!-- #endif -->
-        <!-- 非H5: 点击跳转视频播放页 -->
+
         <!-- #ifndef H5 -->
-        <view class="video-fallback" @tap="openVideo">
-          <image v-if="detail.cover_url" :src="detail.cover_url" class="video-poster" mode="aspectFill" />
-          <view class="play-overlay">
-            <view class="play-btn">
-              <text class="play-icon">▶</text>
-            </view>
-            <text class="play-tip">点击播放视频</text>
-          </view>
-        </view>
+        <video
+          :src="detail.video_url"
+          :poster="detail.cover_url"
+          class="video-player"
+          controls
+          show-fullscreen-btn
+          show-center-play-btn
+          enable-play-gesture
+        />
         <!-- #endif -->
       </view>
 
@@ -50,9 +47,18 @@
         <text class="summary-text">{{ detail.summary }}</text>
       </view>
 
-      <!-- 正文 -->
+      <!-- 正文：兼容图文混排 -->
       <view class="content-box" v-if="detail.content">
-        <text class="content-text">{{ detail.content }}</text>
+        <block v-for="(seg, index) in contentSegments" :key="index">
+          <image
+            v-if="seg.type === 'image'"
+            :src="seg.content"
+            class="content-img"
+            mode="widthFix"
+            show-menu-by-longpress
+          />
+          <text v-else class="content-text">{{ seg.content }}</text>
+        </block>
       </view>
     </view>
   </view>
@@ -79,21 +85,30 @@ onShareTimeline(() => ({
 // #endif
 const tags = ["经典回顾", "球星故事", "历届盘点", "转会动态", "战术解析"];
 
-// 将B站链接转为嵌入播放器地址
-const embedUrl = computed(() => {
-  const url = detail.value.video_url;
-  if (!url) return "";
-  // B站链接: https://www.bilibili.com/video/BVxxxxxx
-  const bvMatch = url.match(/bilibili\.com\/video\/(BV[\w]+)/);
-  if (bvMatch) {
-    return `https://player.bilibili.com/player.html?bvid=${bvMatch[1]}&high_quality=1&autoplay=0`;
+// 正文图文混排解析（兼容 [img]xxx[/img] 标签）
+const contentSegments = computed(() => {
+  const raw = detail.value.content || "";
+  const parts: { type: "text" | "image"; content: string }[] = [];
+  const regex = /\[img\]([\s\S]*?)\[\/img\]/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(raw)) !== null) {
+    if (match.index > lastIndex) {
+      const textBlock = raw.slice(lastIndex, match.index);
+      textBlock.split(/\n+/).filter((p: string) => p.trim()).forEach((p: string) => {
+        parts.push({ type: "text", content: p.trim() });
+      });
+    }
+    parts.push({ type: "image", content: match[1].trim() });
+    lastIndex = regex.lastIndex;
   }
-  // 如果已经是嵌入链接
-  if (url.includes("player.bilibili.com")) {
-    return url;
+  if (lastIndex < raw.length) {
+    const tail = raw.slice(lastIndex);
+    tail.split(/\n+/).filter((p: string) => p.trim()).forEach((p: string) => {
+      parts.push({ type: "text", content: p.trim() });
+    });
   }
-  // 其他视频源直接返回
-  return url;
+  return parts;
 });
 
 onMounted(() => {
@@ -118,20 +133,6 @@ const formatDate = (date: string) => {
   return date.split("T")[0];
 };
 
-const openVideo = () => {
-  if (!detail.value.video_url) return;
-  // #ifndef H5
-  // 将 B站普通链接转为嵌入播放器地址
-  let playUrl = detail.value.video_url;
-  const bvMatch = playUrl.match(/bilibili\.com\/video\/(BV[\w]+)/);
-  if (bvMatch) {
-    playUrl = `https://player.bilibili.com/player.html?bvid=${bvMatch[1]}&high_quality=1&autoplay=1`;
-  }
-  uni.navigateTo({
-    url: `/pages/video-player/index?url=${encodeURIComponent(playUrl)}`,
-  });
-  // #endif
-};
 </script>
 
 <style scoped>
@@ -155,46 +156,6 @@ const openVideo = () => {
   width: 100%;
   height: 420rpx;
   display: block;
-}
-.video-fallback {
-  position: relative;
-  width: 100%;
-  height: 420rpx;
-}
-.video-poster {
-  width: 100%;
-  height: 420rpx;
-}
-.play-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.35);
-}
-.play-btn {
-  width: 100rpx;
-  height: 100rpx;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16rpx;
-}
-.play-icon {
-  font-size: 44rpx;
-  color: #1a73e8;
-  margin-left: 8rpx;
-}
-.play-tip {
-  font-size: 24rpx;
-  color: #fff;
 }
 
 .cover-image {
@@ -249,5 +210,13 @@ const openVideo = () => {
   font-size: 28rpx;
   color: #333;
   line-height: 1.8;
+  display: block;
+  margin-bottom: 16rpx;
+}
+.content-img {
+  width: 100%;
+  border-radius: 10rpx;
+  display: block;
+  margin: 10rpx 0 20rpx;
 }
 </style>
